@@ -20,7 +20,7 @@ tigerkin::ConfigVar<float>::ptr floatCfg = tigerkin::Config::lookup("test.float"
 tigerkin::ConfigVar<std::string>::ptr stringCfg = tigerkin::Config::lookup("test.string", (std::string)"Hello", "string");
 
 YAML::Node root = YAML::LoadFile("/home/liuhu/tigerkin/tests/test_conf.yml");
-    tigerkin::Config::loadFromYaml(root, "test");
+tigerkin::Config::loadFromYaml(root, "test");
 
 TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "int:" << intCfg->getValue();
 TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "float:" << floatCfg->getValue();
