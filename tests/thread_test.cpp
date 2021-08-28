@@ -17,7 +17,7 @@ void threadExecutCallback() {
     sleep(20);
     /*
         use cmd check the thread
-            1. find pid `ps -aux | grep thread_test`
+            1. find pid `ps -aux | grep threadMutex_`
             2. check the thread info `top -H -p [pid]`
     */
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread info:\n" 
