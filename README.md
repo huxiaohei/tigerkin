@@ -1,6 +1,6 @@
 # tigerkin
 
-## Development environment
+## 开发环境
 
 * CentOS Linux release 8.4.2105
 * gcc version 8.4.1
@@ -75,7 +75,7 @@ TIGERKIN_LOG_FMT_INFO(logger, "fmt Hello %s", "World");
 
 ```yml
 logs:
-  - name: system
+  - name: SYSTEM
     level: DEBUG
     formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
     appenders:
@@ -89,7 +89,38 @@ logs:
 ```cpp
 tigerkin::SingletonLoggerMgr::getInstance()->addLoggers("xxx/log.yml", "logs");
     
-TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(system)) << "I am system logger debug";
-TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(system)) << "I am system logger info";
+TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger debug";
+TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger info";
 ```
+
+## 线程系统
+
+基于对`pthread`库的封装，使用灵活简单
+
+* 信号量
+* 支持读写分离互斥锁
+  * 注意读锁是线程共享资源
+  * 写锁是独占资源
+* 多线程
+  * 使用简单并且确保在获取到子线程id的同时线程已经开始执行
+  * 线程号和线程名称与`top`命令中的线程对应
+    * `ps -aux | grep threadMutex_`
+    * `top -H -p [pid]`
+
+```cpp
+void threadFunc() {
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread begin runing\n"
+                                           << "\tid:" << tigerkin::Thread::GetThis()->getId(); 
+    sleep(3);
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread info:\n" 
+                                           << "\tname:" << tigerkin::Thread::GetName() << "\n"
+                                           << "\tid:" << tigerkin::Thread::GetThis()->getId()
+                                           << "\t will end";
+    // 可以使用相关命令查看线程执行情况
+    sleep(20);
+}
+tigerkin::Thread::ptr th(new tigerkin::Thread(&threadFunc, "threadMutex_" + std::to_string(i)));
+th->join();
+```
+
 
