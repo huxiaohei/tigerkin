@@ -1,23 +1,14 @@
 # tigerkin
 
-## 开发环境
+## Development environment
 
 * CentOS Linux release 8.4.2105
 * gcc version 8.4.1
+* gcc-c++ version 8.4.1
 * cmake version 3.18.2
-* libboost_random.so.1.66.0
-  ```sh
-    yum install boost
-    yum install boost-devel
-  ```
-* libyaml-cpp.so.0.7.0
-  ```sh
-    git clone https://github.com/jbeder/yaml-cpp.
-    cd yaml-cpp
-    cmake . -DYAML_BUILD_SHARED_LIBS=ON
-    make
-    make install
-  ```
+* boost version 1.66.0
+* boost-devel version 1.66.0
+* yaml-cpp version 0.6.2
 
 ## 配置系统
 
@@ -100,6 +91,5 @@ tigerkin::SingletonLoggerMgr::getInstance()->addLoggers("xxx/log.yml", "logs");
     
 TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(system)) << "I am system logger debug";
 TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(system)) << "I am system logger info";
-
 ```
 

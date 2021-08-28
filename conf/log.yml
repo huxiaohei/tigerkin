@@ -1,5 +1,5 @@
 logs:
-  - name: system
+  - name: SYSTEM
     level: DEBUG
     formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
     appenders:
@@ -8,7 +8,7 @@ logs:
       - type: FileLogAppender
         level: INFO
         file: ./system_log.txt
-  - name: hall
+  - name: HALL
     level: DEBUG
     formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
     appenders:
@@ -17,7 +17,7 @@ logs:
       - type: FileLogAppender
         level: DEBUG
         file: ./hall_log.txt
-  - name: game
+  - name: GAME
     level: DEBUG
     formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
     appenders:

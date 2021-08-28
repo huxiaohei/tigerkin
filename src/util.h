@@ -17,8 +17,8 @@
 
 namespace tigerkin {
 
-pid_t getThreadId();
-uint32_t getFiberId();
+pid_t GetThreadId();
+uint32_t GetFiberId();
 
 }  // namespace tigerkin
 
