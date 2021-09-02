@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -Wall -Wno-depre
 
 find_library(YAMLCPP yaml-cpp)
 find_library(PTHREAD pthread)
-# message("***", ${YAMLCPP})
+message("***", ${YAMLCPP})
 
 set(LIB_SRC
 		src/log.cpp
@@ -15,17 +15,18 @@ set(LIB_SRC
 		src/thread.cpp
 	)
 
-add_library(tigerkin SHARED ${LIB_SRC})
+add_library(TIGERKIN SHARED ${LIB_SRC})
+
 
 set(LIBS
-		tigerkin
-		yaml-cpp
-		pthread
+		TIGERKIN
+		${YAMLCPP}
+		${PTHREAD}
 	)
 
 add_executable(test_log tests/log_test.cpp)
-add_dependencies(test_log tigerkin)
-target_link_libraries(test_log tigerkin ${YAMLCPP} ${PTHREAD})
+add_dependencies(test_log TIGERKIN)
+target_link_libraries(test_log TIGERKIN ${YAMLCPP} ${PTHREAD})
 
 add_executable(test_config tests/config_test.cpp)
 target_link_libraries(test_config ${LIBS})
@@ -34,4 +35,4 @@ add_executable(test_thread tests/thread_test.cpp)
 target_link_libraries(test_thread ${LIBS})
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)
