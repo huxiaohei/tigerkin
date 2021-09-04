@@ -13,15 +13,16 @@
 #include <boost/lexical_cast.hpp>
 #include <list>
 #include <map>
-#include <unordered_map>
 #include <memory>
 #include <set>
-#include <unordered_set>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "log.h"
+#include "thread.h"
 
 namespace tigerkin {
 
@@ -44,8 +45,7 @@ class ConfigVarBase {
     std::string m_description;
 };
 
-
-template<class FromTyte, class ToType>
+template <class FromTyte, class ToType>
 class LexicalCast {
    public:
     ToType operator()(const FromTyte &v) {
@@ -53,7 +53,7 @@ class LexicalCast {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::string, std::vector<T>> {
    public:
     std::vector<T> operator()(const std::string &v) {
@@ -69,7 +69,7 @@ class LexicalCast<std::string, std::vector<T>> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::vector<T>, std::string> {
    public:
     std::string operator()(const vector<T> &v) {
@@ -83,7 +83,7 @@ class LexicalCast<std::vector<T>, std::string> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::string, std::list<T>> {
    public:
     std::list<T> operator()(const std::string &v) {
@@ -99,7 +99,7 @@ class LexicalCast<std::string, std::list<T>> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::list<T>, std::string> {
    public:
     std::string operator()(const list<T> &v) {
@@ -113,7 +113,7 @@ class LexicalCast<std::list<T>, std::string> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::string, std::set<T>> {
    public:
     std::set<T> operator()(const std::string &v) {
@@ -124,12 +124,12 @@ class LexicalCast<std::string, std::set<T>> {
             ss.str("");
             ss << node[i];
             res.insert(LexicalCast<std::string, T>()(ss.str()));
-        } 
+        }
         return res;
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::set<T>, std::string> {
    public:
     std::string operator()(const std::set<T> &v) {
@@ -143,7 +143,7 @@ class LexicalCast<std::set<T>, std::string> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::string, std::unordered_set<T>> {
    public:
     std::unordered_set<T> operator()(const std::string &v) {
@@ -154,12 +154,12 @@ class LexicalCast<std::string, std::unordered_set<T>> {
             ss.str("");
             ss << node[i];
             res.insert(LexicalCast<std::string, T>()(ss.str()));
-        } 
+        }
         return res;
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::unordered_set<T>, std::string> {
    public:
     std::string operator()(const std::unordered_set<T> &v) {
@@ -173,7 +173,7 @@ class LexicalCast<std::unordered_set<T>, std::string> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::string, std::map<std::string, T>> {
    public:
     std::map<std::string, T> operator()(const std::string &v) {
@@ -189,7 +189,7 @@ class LexicalCast<std::string, std::map<std::string, T>> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::map<std::string, T>, std::string> {
    public:
     std::string operator()(const std::map<std::string, T> &v) {
@@ -203,7 +203,7 @@ class LexicalCast<std::map<std::string, T>, std::string> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::string, std::unordered_map<std::string, T>> {
    public:
     std::unordered_map<std::string, T> operator()(const std::string &v) {
@@ -219,7 +219,7 @@ class LexicalCast<std::string, std::unordered_map<std::string, T>> {
     }
 };
 
-template<class T>
+template <class T>
 class LexicalCast<std::unordered_map<std::string, T>, std::string> {
    public:
     std::string operator()(const std::unordered_map<std::string, T> &v) {
@@ -245,8 +245,7 @@ class ConfigVar : public ConfigVarBase {
         try {
             return ToStr()(m_val);
         } catch (const std::exception &e) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::toString exception:" << \
-                e.what() << " convert: " << typeid(m_val).name() << " to string";
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::toString exception:" << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
         return "";
     }
@@ -256,8 +255,7 @@ class ConfigVar : public ConfigVarBase {
             setValue(FromStr()(val));
             return true;
         } catch (const std::exception &e) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::fromString expection:" << \
-                e.what() << " convert: " << typeid(val).name() << " from string";
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::fromString expection:" << e.what() << " convert: " << typeid(val).name() << " from string";
         }
         return false;
     }
@@ -273,7 +271,7 @@ class Config {
    public:
     typedef std::map<std::string, ConfigVarBase::ptr> ConfigVarMap;
 
-    template<class T>
+    template <class T>
     static typename ConfigVar<T>::ptr lookup(const std::string &name, const T &defaultValue, const std::string &description = "") {
         auto tmp = lookup<T>(name);
         if (tmp) {
@@ -289,23 +287,20 @@ class Config {
         return v;
     }
 
-    template<class T>
+    template <class T>
     static typename ConfigVar<T>::ptr lookup(const std::string &name) {
         auto it = m_datas.find(name);
         if (it == m_datas.end())
             return nullptr;
-        return std::dynamic_pointer_cast<ConfigVar<T>> (it->second);
+        return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
     }
 
     static ConfigVarBase::ptr lookupBase(const std::string &name);
-
-    static void loadFromYaml(const YAML::Node &root, const std::string &name);
+    static void LoadFromYaml(const YAML::Node &root, const std::string &name);
 
    private:
     static ConfigVarMap m_datas;
-
 };
-
 
 }  // namespace tigerkin
 

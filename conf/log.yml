@@ -7,7 +7,7 @@ logs:
         level: DEBUG
       - type: FileLogAppender
         level: INFO
-        file: ./system_log.txt
+        file: ./system_test_log.txt
   - name: HALL
     level: DEBUG
     formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
@@ -16,7 +16,7 @@ logs:
         level: DEBUG
       - type: FileLogAppender
         level: DEBUG
-        file: ./hall_log.txt
+        file: ./hall_test_log.txt
   - name: GAME
     level: DEBUG
     formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
@@ -25,4 +25,11 @@ logs:
         level: DEBUG
       - type: FileLogAppender
         level: INFO
-        file: ./game_log.txt
+        file: ./game_test_log.txt
+  - name: MUTEX
+    level: DEBUG
+    formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
+    appenders:
+      - type: FileLogAppender
+        level: INFO
+        file: ./mutex_safe_test_log.txt

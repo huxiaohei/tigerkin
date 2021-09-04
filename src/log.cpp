@@ -7,14 +7,16 @@
 
 #include "log.h"
 
-#include <cstdio>
-#include "config.h"
 #include <stdarg.h>
 #include <time.h>
 
+#include <cstdio>
+
+#include "config.h"
+
 namespace tigerkin {
 
-template<>
+template <>
 class LexicalCast<std::string, LoggerDefine> {
    public:
     LoggerDefine operator()(const std::string &v) {
@@ -39,14 +41,14 @@ class LexicalCast<std::string, LoggerDefine> {
                 }
                 loggerDef.appenders.push_back(appenderDef);
             }
-        } catch(const std::exception& e) {
+        } catch (const std::exception &e) {
             std::cerr << e.what() << '\n';
         }
         return loggerDef;
     }
 };
 
-template<>
+template <>
 class LexicalCast<LoggerDefine, std::string> {
    public:
     std::string operator()(const LoggerDefine &v) {
@@ -70,7 +72,7 @@ class LexicalCast<LoggerDefine, std::string> {
                 }
                 node["appenders"].push_back(n);
             }
-        } catch(const std::exception& e) {
+        } catch (const std::exception &e) {
             std::cerr << e.what() << '\n';
         }
         ss << node;
@@ -421,9 +423,24 @@ std::ostream &LogFormatter::format(std::ostream &ofs,
     return ofs;
 }
 
+void LogAppender::setFormate(LogFormatter::ptr val) {
+    // Prevent other threads from getting the m_formatter's value before the current thread modifying it
+    Mutex::Lock lock(m_mutex);
+    m_formatter = val;
+}
+
+LogFormatter::ptr LogAppender::getFormate() {
+    // Prevent other threads from modifying the m_formatter's value before the current thread get it
+    Mutex::Lock lock(m_mutex);
+    return m_formatter;
+}
+
 void StdOutLogAppend::log(std::shared_ptr<Logger> logger, LogLevel::Level level,
                           LogEvent::ptr event) {
     if (level >= m_level) {
+        // 1. Prevent other threads from modifying the log format (LogAppender::setFormate) while outputting the log
+        // 2. Prevent the A thread from outputting half of a log while the B thread also outputting the log, resulting in an incomplete log
+        Mutex::Lock lock(m_mutex);
         std::cout << m_formatter->format(logger, level, event);
     }
 }
@@ -435,6 +452,8 @@ FileLogAppend::FileLogAppend(const std::string &filename)
 }
 
 bool FileLogAppend::reopen() {
+    // Prevent the file from being closed or changed while the log is being output
+    Mutex::Lock lock(m_mutex);
     if (m_filestream) {
         m_filestream.close();
     }
@@ -445,6 +464,9 @@ bool FileLogAppend::reopen() {
 void FileLogAppend::log(std::shared_ptr<Logger> logger, LogLevel::Level level,
                         LogEvent::ptr event) {
     if (level >= m_level) {
+        // 1. Prevent other threads from modifying the log format (LogAppender::setFormate) while outputting the log
+        // 2. Prevent the A thread from outputting half of a log while the B thread also outputting the log, resulting in an incomplete log
+        Mutex::Lock lock(m_mutex);
         m_formatter->format(m_filestream, logger, level, event);
     }
 }
@@ -482,6 +504,8 @@ Logger::Logger(const LoggerDefine &loggerDefine)
 }
 
 void Logger::addAppender(LogAppender::ptr appender) {
+    // Prevent threads from modifying the m_appenders's value when outputting the log
+    Mutex::Lock lock(m_mutex);
     if (!appender->getFormate()) {
         appender->setFormate(m_formatter);
     }
@@ -489,6 +513,8 @@ void Logger::addAppender(LogAppender::ptr appender) {
 }
 
 void Logger::delAppender(LogAppender::ptr appender) {
+    // Prevent threads from modifying the m_appenders's value when outputting the log
+    Mutex::Lock lock(m_mutex);
     auto it = m_appenders.begin();
     while (it != m_appenders.end()) {
         if (*it == appender) {
@@ -501,6 +527,8 @@ void Logger::delAppender(LogAppender::ptr appender) {
 
 void Logger::log(LogLevel::Level level, const LogEvent::ptr event) {
     if (level >= m_level) {
+        // Prevent threads from modifying the m_appenders's value when outputting the log
+        Mutex::Lock lock(m_mutex);
         auto self = shared_from_this();
         for (auto &i : m_appenders) {
             i->log(self, level, event);
@@ -535,6 +563,8 @@ LoggerMgr::LoggerMgr() {
 }
 
 void LoggerMgr::addLogger(Logger::ptr logger) {
+    // Prevent other threads from modifying m_loggers's value when adding
+    Mutex::Lock lock(m_mutex);
     auto it = m_loggers.find(logger->getName());
     if (it != m_loggers.end()) {
         m_loggers.erase(it->first);
@@ -545,16 +575,17 @@ void LoggerMgr::addLogger(Logger::ptr logger) {
 void LoggerMgr::addLoggers(const std::string &cfgPath, const std::string &key) {
     ConfigVar<std::vector<LoggerDefine>>::ptr logCfg = Config::lookup("__logs." + key, (std::vector<LoggerDefine>){}, "logs config");
     YAML::Node root = YAML::LoadFile(cfgPath);
-    tigerkin::Config::loadFromYaml(root, "__logs");
+    tigerkin::Config::LoadFromYaml(root, "__logs");
     for (auto it : logCfg->getValue()) {
         Logger::ptr logger(new Logger(it));
-
         if (logger->getIsValue())
             addLogger(logger);
     }
 }
 
 void LoggerMgr::deleteLogger(Logger::ptr logger) {
+    // Prevent other threads from modifying m_loggers's value when deleting
+    Mutex::Lock lock(m_mutex);
     auto it = m_loggers.find(logger->getName());
     if (it == m_loggers.end())
         return;
@@ -562,6 +593,8 @@ void LoggerMgr::deleteLogger(Logger::ptr logger) {
 }
 
 Logger::ptr LoggerMgr::getLogger(const std::string &name) {
+    // Prevent other threads from modifying m_loggers's value when getting a logger
+    Mutex::Lock lock(m_mutex);
     auto it = m_loggers.find(name);
     if (it != m_loggers.end())
         return it->second;

@@ -6,13 +6,14 @@
  ****************************************************************/
 
 #include "../src/config.h"
-#include "../src/log.h"
+
 #include <yaml-cpp/yaml.h>
 
+#include "../src/log.h"
 
 tigerkin::ConfigVar<int>::ptr intCfg = tigerkin::Config::lookup("test.int", (int)8080, "int");
 tigerkin::ConfigVar<float>::ptr floatCfg = tigerkin::Config::lookup("test.float", (float)10.2f, "float");
-tigerkin::ConfigVar<std::string>::ptr stringCfg = tigerkin::Config::lookup("test.string", (std::string)"Hello", "string");
+tigerkin::ConfigVar<std::string>::ptr stringCfg = tigerkin::Config::lookup("test.string", (std::string) "Hello", "string");
 tigerkin::ConfigVar<std::vector<std::string>>::ptr vectorCfg = tigerkin::Config::lookup("test.vector", (std::vector<std::string>){"Hello World"}, "vector");
 tigerkin::ConfigVar<std::list<std::string>>::ptr listCfg = tigerkin::Config::lookup("test.list", (std::list<std::string>){"Hello World"}, "list");
 tigerkin::ConfigVar<std::set<int>>::ptr setCfg = tigerkin::Config::lookup("test.set", (std::set<int>){1, 2, 3}, "set");
@@ -22,27 +23,26 @@ tigerkin::ConfigVar<std::unordered_map<std::string, std::string>>::ptr unordered
 
 void print_yaml(YAML::Node node, int level) {
     if (node.IsScalar()) {
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ') \
-            << node.Scalar() << "~~";
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
+                                               << node.Scalar() << "~~";
     } else if (node.IsNull()) {
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ') \
-            << " NULL";
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
+                                               << " NULL";
     } else if (node.IsMap()) {
         for (auto it = node.begin(); it != node.end(); ++it) {
-            TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ') \
-                << it->first << ":" << it->second.Type();
-                print_yaml(it->second, level + 1);
+            TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
+                                                   << it->first << ":" << it->second.Type();
+            print_yaml(it->second, level + 1);
         }
     } else if (node.IsSequence()) {
         for (size_t i = 0; i < node.size(); ++i) {
-            TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ') \
-                << i << " - " << node[i].Type() << " - " << level;
+            TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
+                                                   << i << " - " << node[i].Type() << " - " << level;
             print_yaml(node[i], level + 1);
         }
     } else {
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "Error:" << node.Type();
     }
-
 }
 
 void test_yaml() {
@@ -54,23 +54,25 @@ void test_config() {
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "int before:" << intCfg->getValue();
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "float before:" << floatCfg->getValue();
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string before:" << stringCfg->getValue();
-#define XX(name, prefix, value) {\
-        std::stringstream ss; \
-        ss.str(""); \
-        ss << #name << " " << #prefix << ": "; \
-        for (auto it : value) { \
-            ss << it; \
-        } \
+#define XX(name, prefix, value)                             \
+    {                                                       \
+        std::stringstream ss;                               \
+        ss.str("");                                         \
+        ss << #name << " " << #prefix << ": ";              \
+        for (auto it : value) {                             \
+            ss << it;                                       \
+        }                                                   \
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << ss.str(); \
     }
 
-#define XX_M(name, prefix, value) { \
-        std::stringstream ss; \
-        ss.str(""); \
-        ss << #name << " " << #prefix << ":"; \
-        for (auto it : value) { \
-            ss << it.first << ":" << it.second; \
-        } \
+#define XX_M(name, prefix, value)                           \
+    {                                                       \
+        std::stringstream ss;                               \
+        ss.str("");                                         \
+        ss << #name << " " << #prefix << ":";               \
+        for (auto it : value) {                             \
+            ss << it.first << ":" << it.second;             \
+        }                                                   \
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << ss.str(); \
     }
 
@@ -82,7 +84,7 @@ void test_config() {
     XX_M(unordered_map, before, unorderedMapCfg->getValue());
 
     YAML::Node root = YAML::LoadFile("/home/liuhu/tigerkin/tests/test_conf.yml");
-    tigerkin::Config::loadFromYaml(root, "test");
+    tigerkin::Config::LoadFromYaml(root, "test");
 
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "int before:" << intCfg->getValue();
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "float before:" << floatCfg->getValue();
@@ -115,38 +117,36 @@ class Persion {
 
 namespace tigerkin {
 
-    template<>
-    class LexicalCast<std::string, Persion> {
-       public:
-        Persion operator()(const std::string &v) {
-            YAML::Node node = YAML::Load(v);
-            Persion p;
-            p.name = node["name"].as<std::string>();
-            p.age = node["age"].as<int>();
-            p.sex = node["sex"].as<int>();
-            return p;
-        }
-    };
+template <>
+class LexicalCast<std::string, Persion> {
+   public:
+    Persion operator()(const std::string &v) {
+        YAML::Node node = YAML::Load(v);
+        Persion p;
+        p.name = node["name"].as<std::string>();
+        p.age = node["age"].as<int>();
+        p.sex = node["sex"].as<int>();
+        return p;
+    }
+};
 
-    template<>
-    class LexicalCast<Persion, std::string> {
-       public:
-        std::string operator()(const Persion &p) {
-            YAML::Node node;
-            node["name"] = p.name;
-            node["age"] = p.age;
-            node["sex"] = p.sex;
-            std::stringstream ss;
-            ss << node;
-            return ss.str();
-        }
-    };
-}
-
+template <>
+class LexicalCast<Persion, std::string> {
+   public:
+    std::string operator()(const Persion &p) {
+        YAML::Node node;
+        node["name"] = p.name;
+        node["age"] = p.age;
+        node["sex"] = p.sex;
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+}  // namespace tigerkin
 
 void test_class() {
-
-    tigerkin::ConfigVar<std::vector<Persion>>::ptr persionVerCfg= tigerkin::Config::lookup("test.persion_vector", (std::vector<Persion>){Persion()}, "persion");
+    tigerkin::ConfigVar<std::vector<Persion>>::ptr persionVerCfg = tigerkin::Config::lookup("test.persion_vector", (std::vector<Persion>){Persion()}, "persion");
 
 #define XX(name, prefix, value)                                                               \
     {                                                                                         \
@@ -159,13 +159,12 @@ void test_class() {
 
     XX(persionVector, before, persionVerCfg->getValue());
     YAML::Node root = YAML::LoadFile("/home/liuhu/tigerkin/tests/test_conf.yml");
-    tigerkin::Config::loadFromYaml(root, "test");
+    tigerkin::Config::LoadFromYaml(root, "test");
     XX(persionVector, after, persionVerCfg->getValue());
 #undef XX
 }
 
-
-int main(int argc, char **argv) {   
+int main(int argc, char **argv) {
     std::cout << "config test start" << std::endl;
     test_yaml();
     test_config();

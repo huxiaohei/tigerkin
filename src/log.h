@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "singleton.h"
+#include "thread.h"
 #include "util.h"
 
 #define TIGERKIN_LOG_LEVEL(logger, level) \
@@ -65,11 +66,11 @@ class LogLevel {
 };
 
 typedef struct AppenderDefine {
-    int type = 1;               //  1:StdOutLogAppender 2:FileLogAppender
+    int type = 1;  //  1:StdOutLogAppender 2:FileLogAppender
     LogLevel::Level level;
     std::string file;
 
-    bool operator==(const AppenderDefine &oth) const {
+    bool operator==(const AppenderDefine& oth) const {
         return type == oth.type && level == oth.level && file == oth.file;
     }
 } AppenderDefine;
@@ -79,8 +80,8 @@ typedef struct LoggerDefine {
     LogLevel::Level level;
     std::string formatter;
     std::vector<AppenderDefine> appenders;
-    
-    bool operator==(const LoggerDefine &oth) const {
+
+    bool operator==(const LoggerDefine& oth) const {
         return name == oth.name && formatter == oth.formatter && level == oth.level && appenders == oth.appenders;
     }
 } LoggerDefine;
@@ -166,11 +167,12 @@ class LogAppender {
                      LogEvent::ptr event) = 0;
     LogLevel::Level getLevel() { return m_level; }
     void setLevel(LogLevel::Level val) { m_level = val; }
-    void setFormate(LogFormatter::ptr val) { m_formatter = val; }
-    LogFormatter::ptr getFormate() const { return m_formatter; }
+    void setFormate(LogFormatter::ptr val);
+    LogFormatter::ptr getFormate();
 
    protected:
     LogLevel::Level m_level = LogLevel::DEBUG;
+    Mutex m_mutex;
     LogFormatter::ptr m_formatter;
 };
 
@@ -200,8 +202,8 @@ class Logger : public std::enable_shared_from_this<Logger> {
    public:
     typedef std::shared_ptr<Logger> ptr;
 
-    Logger(const std::string &name = "root");
-    Logger(const LoggerDefine &loggerDefine);
+    Logger(const std::string& name = "root");
+    Logger(const LoggerDefine& loggerDefine);
     void addAppender(LogAppender::ptr appender);
     void delAppender(LogAppender::ptr appender);
     void setLevel(const LogLevel::Level level) { m_level = level; }
@@ -218,6 +220,7 @@ class Logger : public std::enable_shared_from_this<Logger> {
    private:
     std::string m_name;
     LogLevel::Level m_level;
+    Mutex m_mutex;
     std::list<LogAppender::ptr> m_appenders;
     LogFormatter::ptr m_formatter;
     bool isValue = false;
@@ -227,13 +230,14 @@ class LoggerMgr {
    public:
     LoggerMgr();
     void addLogger(Logger::ptr logger);
-    void addLoggers(const std::string &cfgPath, const std::string &key);
+    void addLoggers(const std::string& cfgPath, const std::string& key);
     void deleteLogger(Logger::ptr logger);
 
     Logger::ptr getRoot() const { return m_root; }
     Logger::ptr getLogger(const std::string& name);
 
    private:
+    Mutex m_mutex;
     std::map<std::string, Logger::ptr> m_loggers;
     Logger::ptr m_root;
 };
