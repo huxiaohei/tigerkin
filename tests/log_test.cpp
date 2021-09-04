@@ -43,7 +43,7 @@ void simpleLogTest() {
 }
 
 void managerLogTest() {
-    tigerkin::SingletonLoggerMgr::getInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
+    tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger debug";
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger info";
@@ -57,8 +57,8 @@ void managerLogTest() {
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(GAME)) << "I am game logger info";
     TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(GAME)) << "I am game logger warn";
 
-    tigerkin::Logger::ptr logger = tigerkin::SingletonLoggerMgr::getInstance()->getLogger("GAME");
-    tigerkin::SingletonLoggerMgr::getInstance()->deleteLogger(logger);
+    tigerkin::Logger::ptr logger = tigerkin::SingletonLoggerMgr::GetInstance()->getLogger("GAME");
+    tigerkin::SingletonLoggerMgr::GetInstance()->deleteLogger(logger);
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(GAME)) << "I am game logger debug";
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(GAME)) << "I am game logger info";
     TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(GAME)) << "I am game logger warn";

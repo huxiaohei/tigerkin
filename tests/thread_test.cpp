@@ -90,7 +90,7 @@ void testMutex() {
 
 int main() {
     std::cout << "thread_test start" << std::endl;
-    tigerkin::SingletonLoggerMgr::getInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
+    tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     testThreadExecut();
     testMutex();
     std::cout << "thread_test end" << std::endl;

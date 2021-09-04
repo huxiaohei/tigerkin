@@ -41,8 +41,8 @@
 #define TIGERKIN_LOG_FMT_ERROR(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::ERROR, fmt, __VA_ARGS__)
 #define TIGERKIN_LOG_FMT_FATAL(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::FATAL, fmt, __VA_ARGS__)
 
-#define TIGERKIN_LOG_ROOT() tigerkin::SingletonLoggerMgr::getInstance()->getRoot()
-#define TIGERKIN_LOG_NAME(name) tigerkin::SingletonLoggerMgr::getInstance()->getLogger(#name)
+#define TIGERKIN_LOG_ROOT() tigerkin::SingletonLoggerMgr::GetInstance()->getRoot()
+#define TIGERKIN_LOG_NAME(name) tigerkin::SingletonLoggerMgr::GetInstance()->getLogger(#name)
 
 using namespace std;
 
