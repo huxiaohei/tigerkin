@@ -38,37 +38,40 @@ void testThreadExecut() {
 }
 
 int cnt = 0;
-tigerkin::ReadWriteMutex s_mutex;
+tigerkin::ReadWriteMutex s_rwMutex;
 
 void testWriteMutex() {
     // Write locks will cause threads to monopolize resources
-    int tmp = 0;
+    tigerkin::ReadWriteMutex::WriteMutex lock(s_rwMutex);
     for (int i = 0; i < 1000; ++i) {
-        tigerkin::ReadWriteMutex::WriteMutex lock(s_mutex);
-        tmp = cnt;
         sleep(0.001);
-        ++tmp;
-        cnt = tmp;
+        cnt += 1;
     }
 }
 
 void testReadMutex() {
     // Read lock threads share resources
-    int tmp = 0;
+    tigerkin::ReadWriteMutex::ReadMutex lock(s_rwMutex);
     for (int i = 0; i < 1000; ++i) {
-        tigerkin::ReadWriteMutex::ReadMutex lock(s_mutex);
-        tmp = cnt;
         sleep(0.001);
-        ++tmp;
-        cnt = tmp;
+        cnt += 1;
     }
 }
 
+tigerkin::Mutex s_mutex;
 
 void testMutex() {
+    tigerkin::Mutex::Lock lock(s_mutex);
+    for (int i = 0; i < 1000; ++i) {
+        sleep(0.001);
+        cnt += 1;
+    }
+}
+
+void testLock() {
     std::vector<tigerkin::Thread::ptr> thrs;
     for (int i = 0; i < 5; ++i) {
-        tigerkin::Thread::ptr th(new tigerkin::Thread(&testWriteMutex, "threadMutex_" + std::to_string(i)));
+        tigerkin::Thread::ptr th(new tigerkin::Thread(&testWriteMutex, "writeMutex_" + std::to_string(i)));
         thrs.push_back(th);
     }
     for (int i = 0; i < 5; ++i) {
@@ -79,20 +82,32 @@ void testMutex() {
     thrs.clear();
     cnt = 0;
     for (int i = 0; i < 5; ++i) {
-        tigerkin::Thread::ptr th(new tigerkin::Thread(&testReadMutex, "threadMutex_" + std::to_string(i)));
+        tigerkin::Thread::ptr th(new tigerkin::Thread(&testReadMutex, "readMutex_" + std::to_string(i)));
         thrs.push_back(th);
     }
     for (int i = 0; i < 5; ++i) {
         thrs[i]->join();
     }
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "read mutex cnt = " << cnt;
+
+    thrs.clear();
+    cnt = 0;
+    for (int i = 0; i < 5; ++i) {
+        tigerkin::Thread::ptr th(new tigerkin::Thread(&testMutex, "mutex_" + std::to_string(i)));
+        thrs.push_back(th);
+    }
+    for (int i = 0; i < 5; ++i) {
+        thrs[i]->join();
+    }
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "mutex cnt = " << cnt;
+
 }
 
 int main() {
     std::cout << "thread_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     testThreadExecut();
-    testMutex();
+    testLock();
     std::cout << "thread_test end" << std::endl;
     return 0;
 

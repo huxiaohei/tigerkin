@@ -36,6 +36,37 @@ class Semaphore {
 };
 
 template<class T>
+class ScopedLockTmpl {
+   public:
+    ScopedLockTmpl(T &mutex)
+        :m_mutex(mutex), m_locked(false) {
+        lock();
+    }
+
+    ~ScopedLockTmpl() {
+        unlock();
+    }
+
+    void lock() {
+        if (!m_locked) {
+            m_mutex.lock();
+            m_locked = true;
+        }
+    }
+
+    void unlock() {
+        if (m_locked) {
+            m_mutex.unlock();
+            m_locked = false;
+        }
+    }
+
+   private:
+    T &m_mutex;
+    bool m_locked;
+};
+
+template<class T>
 class ReadScopedLockImpl {
    public:
     ReadScopedLockImpl(T &mutex)
@@ -63,6 +94,29 @@ class ReadScopedLockImpl {
    private:
     T &m_mutex; 
     bool m_locked;
+};
+
+class Mutex {
+   public:
+    typedef ScopedLockTmpl<Mutex> Lock;
+
+    Mutex() {
+        pthread_mutex_init(&m_mutex, nullptr);
+    }
+
+    ~Mutex() {
+        pthread_mutex_destroy(&m_mutex);
+    }
+    
+    void lock() {
+        pthread_mutex_lock(&m_mutex);
+    }
+
+    void unlock() {
+        pthread_mutex_unlock(&m_mutex);
+    }
+   private:
+    pthread_mutex_t m_mutex;
 };
 
 template<class T>
