@@ -94,6 +94,28 @@ void testThreadSafe() {
     }
 }
 
+void threadPerformance() {
+    int i = 0;
+    while (i < 2000000) {
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(MUTEX)) << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+        ++i;
+    }
+}
+
+void testPerformance() {
+    uint64_t now = time(0);
+    vector<tigerkin::Thread::ptr> thrs;
+    for (int i = 0; i < 2; ++i) {
+        tigerkin::Thread::ptr th(new tigerkin::Thread(&threadPerformance, "testThreadSafe1_" + std::to_string(i)));
+        thrs.push_back(th);
+    }
+    for (size_t i = 0; i < thrs.size(); ++i) {
+        thrs[i]->join();
+    }
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(MUTEX)) << "cost time: " << time(0) - now;
+    std::cout << time(0) - now;
+}
+
 int main(int argc, char **argv) {
     std::cout << "test tigerkin log start" << std::endl;
     testDefaultLog();
@@ -101,6 +123,7 @@ int main(int argc, char **argv) {
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     testManagerLog();
     testThreadSafe();
+    testPerformance();
     std::cout << "test tigerkin log end" << std::endl;
     return 0;
 }
