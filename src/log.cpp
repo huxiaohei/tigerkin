@@ -425,13 +425,13 @@ std::ostream &LogFormatter::format(std::ostream &ofs,
 
 void LogAppender::setFormate(LogFormatter::ptr val) {
     // Prevent other threads from getting the m_formatter's value before the current thread modifying it
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     m_formatter = val;
 }
 
 LogFormatter::ptr LogAppender::getFormate() {
     // Prevent other threads from modifying the m_formatter's value before the current thread get it
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     return m_formatter;
 }
 
@@ -440,7 +440,7 @@ void StdOutLogAppend::log(std::shared_ptr<Logger> logger, LogLevel::Level level,
     if (level >= m_level) {
         // 1. Prevent other threads from modifying the log format (LogAppender::setFormate) while outputting the log
         // 2. Prevent the A thread from outputting half of a log while the B thread also outputting the log, resulting in an incomplete log
-        Mutex::Lock lock(m_mutex);
+        SpinLock::Lock lock(m_lock);
         std::cout << m_formatter->format(logger, level, event);
     }
 }
@@ -453,7 +453,7 @@ FileLogAppend::FileLogAppend(const std::string &filename)
 
 bool FileLogAppend::reopen() {
     // Prevent the file from being closed or changed while the log is being output
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     if (m_filestream) {
         m_filestream.close();
     }
@@ -464,9 +464,15 @@ bool FileLogAppend::reopen() {
 void FileLogAppend::log(std::shared_ptr<Logger> logger, LogLevel::Level level,
                         LogEvent::ptr event) {
     if (level >= m_level) {
+        // Reopen the file every second to prevent the file from being deleted
+        uint64_t now = time(0);
+        if (now != m_time) {
+            reopen();
+            m_time = now;
+        }
         // 1. Prevent other threads from modifying the log format (LogAppender::setFormate) while outputting the log
         // 2. Prevent the A thread from outputting half of a log while the B thread also outputting the log, resulting in an incomplete log
-        Mutex::Lock lock(m_mutex);
+        SpinLock::Lock lock(m_lock);
         m_formatter->format(m_filestream, logger, level, event);
     }
 }
@@ -505,7 +511,7 @@ Logger::Logger(const LoggerDefine &loggerDefine)
 
 void Logger::addAppender(LogAppender::ptr appender) {
     // Prevent threads from modifying the m_appenders's value when outputting the log
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     if (!appender->getFormate()) {
         appender->setFormate(m_formatter);
     }
@@ -514,7 +520,7 @@ void Logger::addAppender(LogAppender::ptr appender) {
 
 void Logger::delAppender(LogAppender::ptr appender) {
     // Prevent threads from modifying the m_appenders's value when outputting the log
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     auto it = m_appenders.begin();
     while (it != m_appenders.end()) {
         if (*it == appender) {
@@ -528,7 +534,7 @@ void Logger::delAppender(LogAppender::ptr appender) {
 void Logger::log(LogLevel::Level level, const LogEvent::ptr event) {
     if (level >= m_level) {
         // Prevent threads from modifying the m_appenders's value when outputting the log
-        Mutex::Lock lock(m_mutex);
+        SpinLock::Lock lock(m_lock);
         auto self = shared_from_this();
         for (auto &i : m_appenders) {
             i->log(self, level, event);
@@ -564,7 +570,7 @@ LoggerMgr::LoggerMgr() {
 
 void LoggerMgr::addLogger(Logger::ptr logger) {
     // Prevent other threads from modifying m_loggers's value when adding
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     auto it = m_loggers.find(logger->getName());
     if (it != m_loggers.end()) {
         m_loggers.erase(it->first);
@@ -585,7 +591,7 @@ void LoggerMgr::addLoggers(const std::string &cfgPath, const std::string &key) {
 
 void LoggerMgr::deleteLogger(Logger::ptr logger) {
     // Prevent other threads from modifying m_loggers's value when deleting
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     auto it = m_loggers.find(logger->getName());
     if (it == m_loggers.end())
         return;
@@ -594,7 +600,7 @@ void LoggerMgr::deleteLogger(Logger::ptr logger) {
 
 Logger::ptr LoggerMgr::getLogger(const std::string &name) {
     // Prevent other threads from modifying m_loggers's value when getting a logger
-    Mutex::Lock lock(m_mutex);
+    SpinLock::Lock lock(m_lock);
     auto it = m_loggers.find(name);
     if (it != m_loggers.end())
         return it->second;

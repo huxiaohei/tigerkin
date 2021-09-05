@@ -172,7 +172,7 @@ class LogAppender {
 
    protected:
     LogLevel::Level m_level = LogLevel::DEBUG;
-    Mutex m_mutex;
+    SpinLock m_lock;
     LogFormatter::ptr m_formatter;
 };
 
@@ -196,6 +196,7 @@ class FileLogAppend : public LogAppender {
    private:
     std::string m_filename;
     std::ofstream m_filestream;
+    uint64_t m_time = 0;
 };
 
 class Logger : public std::enable_shared_from_this<Logger> {
@@ -220,7 +221,7 @@ class Logger : public std::enable_shared_from_this<Logger> {
    private:
     std::string m_name;
     LogLevel::Level m_level;
-    Mutex m_mutex;
+    SpinLock m_lock;
     std::list<LogAppender::ptr> m_appenders;
     LogFormatter::ptr m_formatter;
     bool isValue = false;
@@ -237,7 +238,7 @@ class LoggerMgr {
     Logger::ptr getLogger(const std::string& name);
 
    private:
-    Mutex m_mutex;
+    SpinLock m_lock;
     std::map<std::string, Logger::ptr> m_loggers;
     Logger::ptr m_root;
 };
