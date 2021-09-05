@@ -31,10 +31,11 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
   * `std::string`,`std::vector`,`std::list`,`std::set`,`set::unordered_set`,`std::map`,`std::unordered_map`
   * 支持自定义类型(需要自己写对于的偏特化模板)
 
-## 日志系统
+## 日志系统(同步)
   * 日志器支持配置初始化
   * 支持标准控制台输出
   * 支持文件输出
+    * 运行过程中日志文件被误删除，可自动重新生成
   * 支持格式自定义
     ```cpp
         XX(p, LevelFormatItem),       // p:日志级别
@@ -122,5 +123,3 @@ void threadFunc() {
 tigerkin::Thread::ptr th(new tigerkin::Thread(&threadFunc, "threadMutex_" + std::to_string(i)));
 th->join();
 ```
-
-
