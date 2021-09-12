@@ -66,36 +66,6 @@ class ScopedLockTmpl {
     bool m_locked;
 };
 
-template<class T>
-class ReadScopedLockImpl {
-   public:
-    ReadScopedLockImpl(T &mutex)
-        :m_mutex(mutex), m_locked(false) {
-        lock();
-    }
-
-    ~ReadScopedLockImpl() {
-        unlock();
-    }
-
-    void lock() {
-        if (!m_locked) {
-            m_mutex.rdlock();
-            m_locked = true;
-        }
-    }
-
-    void unlock() {
-        if (m_locked) {
-            m_mutex.unlock();
-            m_locked = false;
-        }
-    }
-   private:
-    T &m_mutex; 
-    bool m_locked;
-};
-
 class SpinLock {
    public:
 
@@ -142,6 +112,36 @@ class Mutex {
     }
    private:
     pthread_mutex_t m_mutex;
+};
+
+template<class T>
+class ReadScopedLockImpl {
+   public:
+    ReadScopedLockImpl(T &mutex)
+        :m_mutex(mutex), m_locked(false) {
+        lock();
+    }
+
+    ~ReadScopedLockImpl() {
+        unlock();
+    }
+
+    void lock() {
+        if (!m_locked) {
+            m_mutex.rdlock();
+            m_locked = true;
+        }
+    }
+
+    void unlock() {
+        if (m_locked) {
+            m_mutex.unlock();
+            m_locked = false;
+        }
+    }
+   private:
+    T &m_mutex; 
+    bool m_locked;
 };
 
 template<class T>

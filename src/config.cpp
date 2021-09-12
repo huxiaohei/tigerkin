@@ -9,8 +9,6 @@
 
 namespace tigerkin {
 
-Config::ConfigVarMap Config::m_datas;
-
 bool isValidName(const std::string &name) {
     if (name.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._1234567890") == std::string::npos)
         return true;
@@ -32,9 +30,10 @@ static void listAllMember(const std::string &prefix,
     }
 }
 
-ConfigVarBase::ptr Config::lookupBase(const std::string &name) {
-    auto it = m_datas.find(name);
-    return it == m_datas.end() ? nullptr : it->second;
+ConfigVarBase::ptr Config::LookupBase(const std::string &name) {
+    ReadWriteMutex::ReadMutex lock(GetMutex());
+    auto it = GetDatas().find(name);
+    return it == GetDatas().end() ? nullptr : it->second;
 }
 
 void Config::LoadFromYaml(const YAML::Node &root, const std::string &name) {
@@ -44,7 +43,7 @@ void Config::LoadFromYaml(const YAML::Node &root, const std::string &name) {
         std::string key = i.first;
         if (key.empty())
             continue;
-        ConfigVarBase::ptr var = lookupBase(key);
+        ConfigVarBase::ptr var = LookupBase(key);
         if (var) {
             if (i.second.IsScalar()) {
                 var->fromString(i.second.Scalar());

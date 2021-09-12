@@ -26,25 +26,6 @@
 
 namespace tigerkin {
 
-class ConfigVarBase {
-   public:
-    typedef std::shared_ptr<ConfigVarBase> ptr;
-
-    ConfigVarBase(const std::string name, const std::string &description = "")
-        : m_name(name), m_description(description) {}
-    virtual ~ConfigVarBase() {}
-
-    virtual std::string toString() = 0;
-    virtual bool fromString(const std::string &val) = 0;
-
-    const std::string &getName() { return m_name; }
-    const std::string &getDescription() { return m_description; }
-
-   protected:
-    std::string m_name;
-    std::string m_description;
-};
-
 template <class FromTyte, class ToType>
 class LexicalCast {
    public:
@@ -233,6 +214,25 @@ class LexicalCast<std::unordered_map<std::string, T>, std::string> {
     }
 };
 
+class ConfigVarBase {
+   public:
+    typedef std::shared_ptr<ConfigVarBase> ptr;
+
+    ConfigVarBase(const std::string name, const std::string &description = "")
+        : m_name(name), m_description(description) {}
+    virtual ~ConfigVarBase() {}
+
+    virtual std::string toString() = 0;
+    virtual bool fromString(const std::string &val) = 0;
+
+    const std::string &getName() { return m_name; }
+    const std::string &getDescription() { return m_description; }
+
+   protected:
+    std::string m_name;
+    std::string m_description;
+};
+
 template <class T, class FromStr = LexicalCast<std::string, T>, class ToStr = LexicalCast<T, std::string>>
 class ConfigVar : public ConfigVarBase {
    public:
@@ -243,7 +243,7 @@ class ConfigVar : public ConfigVarBase {
 
     std::string toString() override {
         try {
-            return ToStr()(m_val);
+            return ToStr()(getValue());
         } catch (const std::exception &e) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::toString exception:" << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
@@ -254,16 +254,24 @@ class ConfigVar : public ConfigVarBase {
         try {
             setValue(FromStr()(val));
             return true;
-        } catch (const std::exception &e) {
+        } catch (const std::exception &e) {            
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::fromString expection:" << e.what() << " convert: " << typeid(val).name() << " from string";
         }
         return false;
     }
 
-    const T getValue() const { return m_val; }
-    void setValue(const T &v) { m_val = v; }
+    const T getValue() { 
+        ReadWriteMutex::ReadMutex lock(m_mutex);
+        return m_val;
+    }
+
+    void setValue(const T &v) { 
+        ReadWriteMutex::WriteMutex lock(m_mutex);
+        m_val = v;
+    }
 
    private:
+    ReadWriteMutex m_mutex;
     T m_val;
 };
 
@@ -272,8 +280,8 @@ class Config {
     typedef std::map<std::string, ConfigVarBase::ptr> ConfigVarMap;
 
     template <class T>
-    static typename ConfigVar<T>::ptr lookup(const std::string &name, const T &defaultValue, const std::string &description = "") {
-        auto tmp = lookup<T>(name);
+    static typename ConfigVar<T>::ptr Lookup(const std::string &name, const T &defaultValue, const std::string &description = "") {
+        auto tmp = Lookup<T>(name);
         if (tmp) {
             TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "lookup name: " << name << " exists";
             return tmp;
@@ -282,24 +290,34 @@ class Config {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "lookup name invalid " << name;
             throw std::invalid_argument(name);
         }
+        ReadWriteMutex::WriteMutex lock(GetMutex());
         typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, defaultValue, description));
-        m_datas[name] = v;
+        GetDatas()[name] = v;
         return v;
     }
 
     template <class T>
-    static typename ConfigVar<T>::ptr lookup(const std::string &name) {
-        auto it = m_datas.find(name);
-        if (it == m_datas.end())
+    static typename ConfigVar<T>::ptr Lookup(const std::string &name) {
+        ReadWriteMutex::ReadMutex lock(GetMutex());
+        auto it = GetDatas().find(name);
+        if (it == GetDatas().end())
             return nullptr;
         return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
     }
 
-    static ConfigVarBase::ptr lookupBase(const std::string &name);
+    static ConfigVarBase::ptr LookupBase(const std::string &name);
     static void LoadFromYaml(const YAML::Node &root, const std::string &name);
 
    private:
-    static ConfigVarMap m_datas;
+    static ConfigVarMap &GetDatas() {
+        static ConfigVarMap s_datas;
+        return s_datas;
+    }
+    static ReadWriteMutex &GetMutex() {
+        static ReadWriteMutex s_mutex;
+        return s_mutex;
+    }
+    
 };
 
 }  // namespace tigerkin

@@ -11,15 +11,15 @@
 
 #include "../src/log.h"
 
-tigerkin::ConfigVar<int>::ptr intCfg = tigerkin::Config::lookup("test.int", (int)8080, "int");
-tigerkin::ConfigVar<float>::ptr floatCfg = tigerkin::Config::lookup("test.float", (float)10.2f, "float");
-tigerkin::ConfigVar<std::string>::ptr stringCfg = tigerkin::Config::lookup("test.string", (std::string) "Hello", "string");
-tigerkin::ConfigVar<std::vector<std::string>>::ptr vectorCfg = tigerkin::Config::lookup("test.vector", (std::vector<std::string>){"Hello World"}, "vector");
-tigerkin::ConfigVar<std::list<std::string>>::ptr listCfg = tigerkin::Config::lookup("test.list", (std::list<std::string>){"Hello World"}, "list");
-tigerkin::ConfigVar<std::set<int>>::ptr setCfg = tigerkin::Config::lookup("test.set", (std::set<int>){1, 2, 3}, "set");
-tigerkin::ConfigVar<std::unordered_set<int>>::ptr unorderedSetCfg = tigerkin::Config::lookup("test.unordered_set", (std::unordered_set<int>){1, 2, 3}, "unordered_set");
-tigerkin::ConfigVar<std::map<std::string, std::string>>::ptr mapCfg = tigerkin::Config::lookup("test.map", (std::map<std::string, std::string>){{"key1", "Hello"}}, "map");
-tigerkin::ConfigVar<std::unordered_map<std::string, std::string>>::ptr unorderedMapCfg = tigerkin::Config::lookup("test.unordered_map", (std::unordered_map<std::string, std::string>){}, "unordered_map");
+tigerkin::ConfigVar<int>::ptr intCfg = tigerkin::Config::Lookup("test.int", (int)8080, "int");
+tigerkin::ConfigVar<float>::ptr floatCfg = tigerkin::Config::Lookup("test.float", (float)10.2f, "float");
+tigerkin::ConfigVar<std::string>::ptr stringCfg = tigerkin::Config::Lookup("test.string", (std::string) "Hello", "string");
+tigerkin::ConfigVar<std::vector<std::string>>::ptr vectorCfg = tigerkin::Config::Lookup("test.vector", (std::vector<std::string>){"Hello World"}, "vector");
+tigerkin::ConfigVar<std::list<std::string>>::ptr listCfg = tigerkin::Config::Lookup("test.list", (std::list<std::string>){"Hello World"}, "list");
+tigerkin::ConfigVar<std::set<int>>::ptr setCfg = tigerkin::Config::Lookup("test.set", (std::set<int>){1, 2, 3}, "set");
+tigerkin::ConfigVar<std::unordered_set<int>>::ptr unorderedSetCfg = tigerkin::Config::Lookup("test.unordered_set", (std::unordered_set<int>){1, 2, 3}, "unordered_set");
+tigerkin::ConfigVar<std::map<std::string, std::string>>::ptr mapCfg = tigerkin::Config::Lookup("test.map", (std::map<std::string, std::string>){{"key1", "Hello"}}, "map");
+tigerkin::ConfigVar<std::unordered_map<std::string, std::string>>::ptr unorderedMapCfg = tigerkin::Config::Lookup("test.unordered_map", (std::unordered_map<std::string, std::string>){}, "unordered_map");
 
 void print_yaml(YAML::Node node, int level) {
     if (node.IsScalar()) {
@@ -146,7 +146,7 @@ class LexicalCast<Persion, std::string> {
 }  // namespace tigerkin
 
 void test_class() {
-    tigerkin::ConfigVar<std::vector<Persion>>::ptr persionVerCfg = tigerkin::Config::lookup("test.persion_vector", (std::vector<Persion>){Persion()}, "persion");
+    tigerkin::ConfigVar<std::vector<Persion>>::ptr persionVerCfg = tigerkin::Config::Lookup("test.persion_vector", (std::vector<Persion>){Persion()}, "persion");
 
 #define XX(name, prefix, value)                                                               \
     {                                                                                         \

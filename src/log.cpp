@@ -579,7 +579,7 @@ void LoggerMgr::addLogger(Logger::ptr logger) {
 }
 
 void LoggerMgr::addLoggers(const std::string &cfgPath, const std::string &key) {
-    ConfigVar<std::vector<LoggerDefine>>::ptr logCfg = Config::lookup("__logs." + key, (std::vector<LoggerDefine>){}, "logs config");
+    ConfigVar<std::vector<LoggerDefine>>::ptr logCfg = Config::Lookup("__logs." + key, (std::vector<LoggerDefine>){}, "logs config");
     YAML::Node root = YAML::LoadFile(cfgPath);
     tigerkin::Config::LoadFromYaml(root, "__logs");
     for (auto it : logCfg->getValue()) {
