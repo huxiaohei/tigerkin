@@ -254,18 +254,18 @@ class ConfigVar : public ConfigVarBase {
         try {
             setValue(FromStr()(val));
             return true;
-        } catch (const std::exception &e) {            
+        } catch (const std::exception &e) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "ConfigVal::fromString expection:" << e.what() << " convert: " << typeid(val).name() << " from string";
         }
         return false;
     }
 
-    const T getValue() { 
+    const T getValue() {
         ReadWriteLock::ReadLock lock(m_mutex);
         return m_val;
     }
 
-    void setValue(const T &v) { 
+    void setValue(const T &v) {
         ReadWriteLock::WriteLock lock(m_mutex);
         m_val = v;
     }
@@ -317,7 +317,6 @@ class Config {
         static ReadWriteLock s_mutex;
         return s_mutex;
     }
-    
 };
 
 }  // namespace tigerkin

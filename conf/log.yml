@@ -12,6 +12,8 @@ logs:
     level: DEBUG
     formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
     appenders:
+      - type: StdOutLogAppender
+        level: DEBUG
       - type: FileLogAppender
         level: INFO
         file: ./test_log.txt

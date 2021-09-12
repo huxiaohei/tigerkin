@@ -166,6 +166,7 @@ void test_class() {
 
 int main(int argc, char **argv) {
     std::cout << "config test start" << std::endl;
+    tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     test_yaml();
     test_config();
     test_class();

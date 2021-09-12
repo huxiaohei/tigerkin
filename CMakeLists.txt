@@ -29,6 +29,9 @@ add_executable(test_log tests/log_test.cpp)
 add_dependencies(test_log TIGERKIN)
 target_link_libraries(test_log TIGERKIN ${YAMLCPP} ${PTHREAD})
 
+add_executable(test_util tests/util_test.cpp)
+target_link_libraries(test_util ${LIBS})
+
 add_executable(test_mutex tests/mutex_test.cpp)
 target_link_libraries(test_mutex ${LIBS})
 
