@@ -19,7 +19,7 @@ static void listAllMember(const std::string &prefix,
                           const YAML::Node &node,
                           std::list<std::pair<std::string, const YAML::Node>> &output) {
     if (!isValidName(prefix) || prefix.empty()) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "Config invalid name: " << prefix << " : " << node;
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "Config invalid name: " << prefix << " : " << node;
         return;
     }
     output.push_back(std::make_pair(prefix, node));

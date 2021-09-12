@@ -5,12 +5,12 @@
  * Copyright (c) 2021 虎小黑
  ****************************************************************/
 
-#include "../src/thread.h"
+#include "../src/mutex.h"
 
 #include <vector>
 
 #include "../src/log.h"
-#include "../src/mutex.h"
+#include "../src/thread.h"
 
 int cnt = 0;
 tigerkin::ReadWriteLock s_rwLock;
@@ -54,7 +54,7 @@ tigerkin::SpinLock s_spinLock;
 
 void testSpin() {
     tigerkin::SpinLock::Lock lock(s_spinLock);
-    for (int i =0; i < 1000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         sleep(0.001);
         cnt += 1;
     }
@@ -71,7 +71,7 @@ void testLock() {
     for (int i = 0; i < 5; ++i) {
         thrs[i]->join();
     }
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "no lock cnt = " << cnt;
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "no lock cnt = " << cnt;
 
     thrs.clear();
     cnt = 0;
@@ -82,7 +82,7 @@ void testLock() {
     for (int i = 0; i < 5; ++i) {
         thrs[i]->join();
     }
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "write clock cnt = " << cnt;
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write clock cnt = " << cnt;
 
     thrs.clear();
     cnt = 0;
@@ -93,7 +93,7 @@ void testLock() {
     for (int i = 0; i < 5; ++i) {
         thrs[i]->join();
     }
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "read lock cnt = " << cnt;
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "read lock cnt = " << cnt;
 
     thrs.clear();
     cnt = 0;
@@ -104,7 +104,7 @@ void testLock() {
     for (int i = 0; i < 5; ++i) {
         thrs[i]->join();
     }
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "mutex cnt = " << cnt;
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "mutex cnt = " << cnt;
 
     thrs.clear();
     cnt = 0;
@@ -115,7 +115,7 @@ void testLock() {
     for (int i = 0; i < 5; ++i) {
         thrs[i]->join();
     }
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "spin cnt = " << cnt;
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "spin cnt = " << cnt;
 }
 
 int main() {

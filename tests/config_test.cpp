@@ -23,25 +23,25 @@ tigerkin::ConfigVar<std::unordered_map<std::string, std::string>>::ptr unordered
 
 void print_yaml(YAML::Node node, int level) {
     if (node.IsScalar()) {
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
-                                               << node.Scalar() << "~~";
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << std::string(level * 4, ' ')
+                                                   << node.Scalar() << "~~";
     } else if (node.IsNull()) {
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
-                                               << " NULL";
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << std::string(level * 4, ' ')
+                                                   << " NULL";
     } else if (node.IsMap()) {
         for (auto it = node.begin(); it != node.end(); ++it) {
-            TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
-                                                   << it->first << ":" << it->second.Type();
+            TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << std::string(level * 4, ' ')
+                                                       << it->first << ":" << it->second.Type();
             print_yaml(it->second, level + 1);
         }
     } else if (node.IsSequence()) {
         for (size_t i = 0; i < node.size(); ++i) {
-            TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << std::string(level * 4, ' ')
-                                                   << i << " - " << node[i].Type() << " - " << level;
+            TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << std::string(level * 4, ' ')
+                                                       << i << " - " << node[i].Type() << " - " << level;
             print_yaml(node[i], level + 1);
         }
     } else {
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "Error:" << node.Type();
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "Error:" << node.Type();
     }
 }
 
@@ -51,29 +51,29 @@ void test_yaml() {
 }
 
 void test_config() {
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "int before:" << intCfg->getValue();
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "float before:" << floatCfg->getValue();
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string before:" << stringCfg->getValue();
-#define XX(name, prefix, value)                             \
-    {                                                       \
-        std::stringstream ss;                               \
-        ss.str("");                                         \
-        ss << #name << " " << #prefix << ": ";              \
-        for (auto it : value) {                             \
-            ss << it;                                       \
-        }                                                   \
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << ss.str(); \
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "int before:" << intCfg->getValue();
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "float before:" << floatCfg->getValue();
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "string before:" << stringCfg->getValue();
+#define XX(name, prefix, value)                                 \
+    {                                                           \
+        std::stringstream ss;                                   \
+        ss.str("");                                             \
+        ss << #name << " " << #prefix << ": ";                  \
+        for (auto it : value) {                                 \
+            ss << it;                                           \
+        }                                                       \
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << ss.str(); \
     }
 
-#define XX_M(name, prefix, value)                           \
-    {                                                       \
-        std::stringstream ss;                               \
-        ss.str("");                                         \
-        ss << #name << " " << #prefix << ":";               \
-        for (auto it : value) {                             \
-            ss << it.first << ":" << it.second;             \
-        }                                                   \
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << ss.str(); \
+#define XX_M(name, prefix, value)                               \
+    {                                                           \
+        std::stringstream ss;                                   \
+        ss.str("");                                             \
+        ss << #name << " " << #prefix << ":";                   \
+        for (auto it : value) {                                 \
+            ss << it.first << ":" << it.second;                 \
+        }                                                       \
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << ss.str(); \
     }
 
     XX(vector, before, vectorCfg->getValue());
@@ -86,9 +86,9 @@ void test_config() {
     YAML::Node root = YAML::LoadFile("/home/liuhu/tigerkin/tests/test_conf.yml");
     tigerkin::Config::LoadFromYaml(root, "test");
 
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "int before:" << intCfg->getValue();
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "float before:" << floatCfg->getValue();
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string before:" << stringCfg->getValue();
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "int before:" << intCfg->getValue();
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "float before:" << floatCfg->getValue();
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "string before:" << stringCfg->getValue();
     XX(vector, after, vectorCfg->getValue());
     XX(list, after, listCfg->getValue());
     XX(set, after, setCfg->getValue());
@@ -148,13 +148,13 @@ class LexicalCast<Persion, std::string> {
 void test_class() {
     tigerkin::ConfigVar<std::vector<Persion>>::ptr persionVerCfg = tigerkin::Config::Lookup("test.persion_vector", (std::vector<Persion>){Persion()}, "persion");
 
-#define XX(name, prefix, value)                                                               \
-    {                                                                                         \
-        std::stringstream ss;                                                                 \
-        for (auto it : value) {                                                               \
-            ss << it.to_string();                                                             \
-        }                                                                                     \
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << #name << " " << #prefix << " " << ss.str(); \
+#define XX(name, prefix, value)                                                                   \
+    {                                                                                             \
+        std::stringstream ss;                                                                     \
+        for (auto it : value) {                                                                   \
+            ss << it.to_string();                                                                 \
+        }                                                                                         \
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << #name << " " << #prefix << " " << ss.str(); \
     }
 
     XX(persionVector, before, persionVerCfg->getValue());

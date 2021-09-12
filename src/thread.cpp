@@ -40,9 +40,9 @@ Thread::Thread(std::function<void()> cb, const std::string &name)
     }
     int rt = pthread_create(&m_thread, nullptr, &Thread::Run, this);
     if (rt) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME("SYSTEM")) << "pthread_create fail\n"
-                                                        << "\t rt:" << rt << "\n"
-                                                        << "\t name:" << name;
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "pthread_create fail\n"
+                                                      << "\t rt:" << rt << "\n"
+                                                      << "\t name:" << name;
         throw std::logic_error("pthread_create error");
     }
     // wait a semaphore is to ensure the thread is running or executed when the constructor function executed
@@ -62,9 +62,9 @@ void Thread::join() {
     if (m_thread) {
         int rt = pthread_join(m_thread, nullptr);
         if (rt) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME("SYSTEM")) << "pthread_join fail\n"
-                                                            << "\t rt:" << rt << "\n"
-                                                            << "\t name:" << m_name;
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "pthread_join fail\n"
+                                                          << "\t rt:" << rt << "\n"
+                                                          << "\t name:" << m_name;
             throw std::logic_error("pthread_join error");
         }
     }

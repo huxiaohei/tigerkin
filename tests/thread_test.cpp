@@ -12,8 +12,8 @@
 #include "../src/log.h"
 
 void threadExecutCallback() {
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread begin runing\n"
-                                           << "\tid:" << tigerkin::Thread::GetThis()->getId();
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "thread begin runing\n"
+                                               << "\tid:" << tigerkin::Thread::GetThis()->getId();
     // 1. simulate the thread cost time
     // 2. let you have time to check the thread info
     sleep(20);
@@ -22,10 +22,10 @@ void threadExecutCallback() {
             1. find pid `ps -aux | grep threadMutex_`
             2. check the thread info `top -H -p [pid]`
     */
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread info:\n"
-                                           << "\tname:" << tigerkin::Thread::GetName() << "\n"
-                                           << "\tid:" << tigerkin::Thread::GetThis()->getId()
-                                           << "\t will end";
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "thread info:\n"
+                                               << "\tname:" << tigerkin::Thread::GetName() << "\n"
+                                               << "\tid:" << tigerkin::Thread::GetThis()->getId()
+                                               << "\t will end";
 }
 
 void testThreadExecut() {

@@ -245,7 +245,7 @@ class ConfigVar : public ConfigVarBase {
         try {
             return ToStr()(getValue());
         } catch (const std::exception &e) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::toString exception:" << e.what() << " convert: " << typeid(m_val).name() << " to string";
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "ConfigVal::toString exception:" << e.what() << " convert: " << typeid(m_val).name() << " to string";
         }
         return "";
     }
@@ -255,7 +255,7 @@ class ConfigVar : public ConfigVarBase {
             setValue(FromStr()(val));
             return true;
         } catch (const std::exception &e) {            
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "ConfigVal::fromString expection:" << e.what() << " convert: " << typeid(val).name() << " from string";
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "ConfigVal::fromString expection:" << e.what() << " convert: " << typeid(val).name() << " from string";
         }
         return false;
     }
