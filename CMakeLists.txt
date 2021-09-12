@@ -9,6 +9,7 @@ find_library(PTHREAD pthread)
 message("***", ${YAMLCPP})
 
 set(LIB_SRC
+		src/mutex.cpp
 		src/log.cpp
 		src/util.cpp
 		src/config.cpp
@@ -28,11 +29,15 @@ add_executable(test_log tests/log_test.cpp)
 add_dependencies(test_log TIGERKIN)
 target_link_libraries(test_log TIGERKIN ${YAMLCPP} ${PTHREAD})
 
+add_executable(test_mutex tests/mutex_test.cpp)
+target_link_libraries(test_mutex ${LIBS})
+
 add_executable(test_config tests/config_test.cpp)
 target_link_libraries(test_config ${LIBS})
 
 add_executable(test_thread tests/thread_test.cpp)
 target_link_libraries(test_thread ${LIBS})
+
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)

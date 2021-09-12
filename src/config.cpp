@@ -31,7 +31,7 @@ static void listAllMember(const std::string &prefix,
 }
 
 ConfigVarBase::ptr Config::LookupBase(const std::string &name) {
-    ReadWriteMutex::ReadMutex lock(GetMutex());
+    ReadWriteLock::ReadLock lock(GetMutex());
     auto it = GetDatas().find(name);
     return it == GetDatas().end() ? nullptr : it->second;
 }

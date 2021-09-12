@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "singleton.h"
-#include "thread.h"
+#include "mutex.h"
 #include "util.h"
 
 #define TIGERKIN_LOG_LEVEL(logger, level) \

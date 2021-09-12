@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "log.h"
-#include "thread.h"
+#include "mutex.h"
 
 namespace tigerkin {
 
@@ -261,17 +261,17 @@ class ConfigVar : public ConfigVarBase {
     }
 
     const T getValue() { 
-        ReadWriteMutex::ReadMutex lock(m_mutex);
+        ReadWriteLock::ReadLock lock(m_mutex);
         return m_val;
     }
 
     void setValue(const T &v) { 
-        ReadWriteMutex::WriteMutex lock(m_mutex);
+        ReadWriteLock::WriteLock lock(m_mutex);
         m_val = v;
     }
 
    private:
-    ReadWriteMutex m_mutex;
+    ReadWriteLock m_mutex;
     T m_val;
 };
 
@@ -290,7 +290,7 @@ class Config {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_ROOT()) << "lookup name invalid " << name;
             throw std::invalid_argument(name);
         }
-        ReadWriteMutex::WriteMutex lock(GetMutex());
+        ReadWriteLock::WriteLock lock(GetMutex());
         typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, defaultValue, description));
         GetDatas()[name] = v;
         return v;
@@ -298,7 +298,7 @@ class Config {
 
     template <class T>
     static typename ConfigVar<T>::ptr Lookup(const std::string &name) {
-        ReadWriteMutex::ReadMutex lock(GetMutex());
+        ReadWriteLock::ReadLock lock(GetMutex());
         auto it = GetDatas().find(name);
         if (it == GetDatas().end())
             return nullptr;
@@ -313,8 +313,8 @@ class Config {
         static ConfigVarMap s_datas;
         return s_datas;
     }
-    static ReadWriteMutex &GetMutex() {
-        static ReadWriteMutex s_mutex;
+    static ReadWriteLock &GetMutex() {
+        static ReadWriteLock s_mutex;
         return s_mutex;
     }
     
