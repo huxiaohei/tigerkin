@@ -8,9 +8,13 @@
 #include "../src/util.h"
 
 #include "../src/log.h"
+#include "../src/macro.h"
 
 void test_backtrace() {
-    TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << tigerkin::BacktraceToString(10, 0, "\t");
+    // TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << tigerkin::BacktraceToString(10, 0, "\t");
+    // TIGERKIN_ASSERT(3 > 5);
+    TIGERKIN_ASSERT2(3 > 5, "错误");
+    // TIGERKIN_ASSERT2("error2", "ok");
 }
 
 int main() {
