@@ -38,6 +38,7 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
     * 运行过程中日志文件被误删除，可自动重新生成
   * 支持格式自定义
     ```cpp
+        XX(m, MessageFormatItem),     // m:消息
         XX(p, LevelFormatItem),       // p:日志级别
         XX(r, ElapseFormatItem),      // r:累计毫秒数
         XX(c, NameFormatItem),        // c:日志名称
@@ -47,7 +48,7 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
         XX(f, FileNameFormatItem),    // f:文件名
         XX(l, LineFormatItem),        // l:行号
         XX(T, TabFormatItem),         // T:Tab
-        XX(F, FiberIdFormatItem),     // F:协程id
+        XX(F, CoIdFormatItem),        // F:协程id
         XX(N, ThreadNameFormatItem),  // N:线程名称
     ```
 
@@ -123,3 +124,5 @@ void threadFunc() {
 tigerkin::Thread::ptr th(new tigerkin::Thread(&threadFunc, "threadMutex_" + std::to_string(i)));
 th->join();
 ```
+
+## 协程系统

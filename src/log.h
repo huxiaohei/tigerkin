@@ -22,10 +22,15 @@
 
 #include "mutex.h"
 #include "singleton.h"
+#include "thread.h"
 #include "util.h"
 
-#define TIGERKIN_LOG_LEVEL(logger, level) \
-    if (logger->getLevel() <= level) tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger, level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetCoroutineId(), time(0)))).getSS()
+#define TIGERKIN_LOG_LEVEL(logger, level)                                                                                                                    \
+    if (logger->getLevel() <= level)                                                                                                                         \
+    tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger,                                                                            \
+                                                                          level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetCoroutineId(), \
+                                                                          time(0), tigerkin::Thread::GetName())))                                            \
+        .getSS()
 
 #define TIGERKIN_LOG_DEBUG(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::DEBUG)
 #define TIGERKIN_LOG_INFO(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::INFO)
@@ -33,8 +38,13 @@
 #define TIGERKIN_LOG_ERROR(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::ERROR)
 #define TIGERKIN_LOG_FATAL(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::FATAL)
 
-#define TIGERKIN_LOG_FMT_LEVEL(logger, level, fmt, ...) \
-    if (logger->getLevel() <= level) tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger, level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetCoroutineId(), time(0)))).getEvent()->format(fmt, __VA_ARGS__)
+#define TIGERKIN_LOG_FMT_LEVEL(logger, level, fmt, ...)                                                                                                      \
+    if (logger->getLevel() <= level)                                                                                                                         \
+    tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger,                                                                            \
+                                                                          level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetCoroutineId(), \
+                                                                          time(0), tigerkin::Thread::GetName())))                                            \
+        .getEvent()                                                                                                                                          \
+        ->format(fmt, __VA_ARGS__)
 
 #define TIGERKIN_LOG_FMT_DEBUG(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::DEBUG, fmt, __VA_ARGS__)
 #define TIGERKIN_LOG_FMT_INFO(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::INFO, fmt, __VA_ARGS__)
@@ -90,13 +100,13 @@ class LogEvent {
    public:
     typedef std::shared_ptr<LogEvent> ptr;
     LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char* file, int32_t line,
-             uint32_t elapse, uint32_t threadId, uint32_t fiberId, uint64_t time);
+             uint32_t elapse, uint32_t threadId, uint64_t coId, uint64_t time, const std::string& threadName);
     const char* getFile() const { return m_file; }
     int32_t getLine() const { return m_line; }
     int32_t getElapse() const { return m_elapse; }
     int32_t getThreadId() const { return m_threadId; }
     const std::string& getThreadName() const { return m_threadName; }
-    int32_t getFiberId() const { return m_fiberId; }
+    uint64_t getCoId() const { return m_coId; }
     uint64_t getTime() const { return m_time; }
     std::string getContent() const { return m_ss.str(); }
     std::stringstream& getSS() { return m_ss; }
@@ -113,9 +123,9 @@ class LogEvent {
     int32_t m_line = 0;
     uint32_t m_elapse = 0;
     int32_t m_threadId = 0;
-    std::string m_threadName;
-    uint32_t m_fiberId = 0;
+    uint64_t m_coId = 0;
     uint64_t m_time;
+    std::string m_threadName;
     std::stringstream m_ss;
 };
 

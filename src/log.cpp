@@ -81,8 +81,8 @@ class LexicalCast<LoggerDefine, std::string> {
 };
 
 LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char *file, int32_t line,
-                   uint32_t elapse, uint32_t threadId, uint32_t fiberId, uint64_t time)
-    : m_logger(logger), m_level(level), m_file(file), m_line(line), m_elapse(elapse), m_threadId(threadId), m_fiberId(fiberId), m_time(time) {
+                   uint32_t elapse, uint32_t threadId, uint64_t coId, uint64_t time, const std::string &threadName)
+    : m_logger(logger), m_level(level), m_file(file), m_line(line), m_elapse(elapse), m_threadId(threadId), m_coId(coId), m_time(time), m_threadName(threadName) {
 }
 
 void LogEvent::format(const char *fmt, ...) {
@@ -210,12 +210,12 @@ class ThreadNameFormatItem : public LogFormatter::FormatItem {
     }
 };
 
-class FiberIdFormatItem : public LogFormatter::FormatItem {
+class CoIdFormatItem : public LogFormatter::FormatItem {
    public:
-    FiberIdFormatItem(const std::string &fmt = "") {}
+    CoIdFormatItem(const std::string &fmt = "") {}
     void format(std::ostream &os, Logger::ptr logger,
                 LogLevel::Level level, LogEvent::ptr event) {
-        os << event->getFiberId();
+        os << event->getCoId();
     }
 };
 
@@ -383,7 +383,7 @@ void LogFormatter::init() {
         XX(f, FileNameFormatItem),    // f:文件名
         XX(l, LineFormatItem),        // l:行号
         XX(T, TabFormatItem),         // T:Tab
-        XX(F, FiberIdFormatItem),     // F:协程id
+        XX(F, CoIdFormatItem),        // F:协程id
         XX(N, ThreadNameFormatItem),  // N:线程名称
 #undef XX
     };

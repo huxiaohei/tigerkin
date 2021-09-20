@@ -18,7 +18,7 @@ void testDefaultLog() {
 }
 
 void testSimpleLog() {
-    tigerkin::Logger::ptr logger(new tigerkin::Logger("testStdSimpleLog"));
+    tigerkin::Logger::ptr logger(new tigerkin::Logger("SIMPLE"));
     tigerkin::LogAppender::ptr stdAppender(new tigerkin::StdOutLogAppend());
     tigerkin::LogFormatter::ptr formater(new tigerkin::LogFormatter("%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"));
     stdAppender->setFormate(formater);

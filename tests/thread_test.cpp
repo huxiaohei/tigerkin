@@ -13,6 +13,7 @@
 
 void threadExecutCallback() {
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "thread begin runing\n"
+                                               << "\tname:" << tigerkin::Thread::GetName() << "\n"
                                                << "\tid:" << tigerkin::Thread::GetThis()->getId();
     // 1. simulate the thread cost time
     // 2. let you have time to check the thread info
