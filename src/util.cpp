@@ -7,6 +7,7 @@
 
 #include "util.h"
 #include "log.h"
+#include "coroutine.h"
 #include <execinfo.h>
 
 namespace tigerkin {
@@ -15,8 +16,8 @@ pid_t GetThreadId() {
     return syscall(SYS_gettid);
 }
 
-uint32_t GetFiberId() {
-    return 0;
+uint64_t GetCoroutineId() {
+    return Coroutine::GetCoId();
 }
 
 void Backtrace(std::vector<std::string> &bt, int size, int skip) {

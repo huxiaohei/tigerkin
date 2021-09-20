@@ -25,7 +25,7 @@
 #include "util.h"
 
 #define TIGERKIN_LOG_LEVEL(logger, level) \
-    if (logger->getLevel() <= level) tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger, level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetFiberId(), time(0)))).getSS()
+    if (logger->getLevel() <= level) tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger, level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetCoroutineId(), time(0)))).getSS()
 
 #define TIGERKIN_LOG_DEBUG(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::DEBUG)
 #define TIGERKIN_LOG_INFO(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::INFO)
@@ -34,7 +34,7 @@
 #define TIGERKIN_LOG_FATAL(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::FATAL)
 
 #define TIGERKIN_LOG_FMT_LEVEL(logger, level, fmt, ...) \
-    if (logger->getLevel() <= level) tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger, level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetFiberId(), time(0)))).getEvent()->format(fmt, __VA_ARGS__)
+    if (logger->getLevel() <= level) tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger, level, __FILE__, __LINE__, 0, tigerkin::GetThreadId(), tigerkin::GetCoroutineId(), time(0)))).getEvent()->format(fmt, __VA_ARGS__)
 
 #define TIGERKIN_LOG_FMT_DEBUG(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::DEBUG, fmt, __VA_ARGS__)
 #define TIGERKIN_LOG_FMT_INFO(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::INFO, fmt, __VA_ARGS__)
