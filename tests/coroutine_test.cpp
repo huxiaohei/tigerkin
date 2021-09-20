@@ -6,13 +6,11 @@
 ****************************************************************/
 
 #include <iostream>
+#include <vector>
+#include <string>
 #include "../src/log.h"
+#include "../src/thread.h"
 #include "../src/coroutine.h"
-
-void co_test_funcB() {
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B start";
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B end";
-}
 
 void co_test_funcA() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A start";
@@ -20,14 +18,44 @@ void co_test_funcA() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A end";
 }
 
-
-int main(int argc, char **argv) {
-    std::cout << "coroutine_test start" << std::endl;
-    tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in main function";
+void simple_test() {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "simple test start";
     tigerkin::Coroutine::ptr coA(new tigerkin::Coroutine(&co_test_funcA));
     coA->resume();
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in main function";
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "simple test";
     coA->resume();
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "simple end";
+}
+
+void co_test_funcB() {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B start";
+    sleep(2);
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B end";
+}
+
+void thread_test_func() {
+    tigerkin::Coroutine::ptr coB(new tigerkin::Coroutine(&co_test_funcB));
+    coB->resume();
+}
+
+void thread_test() {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "thread test start";
+    std::vector<tigerkin::Thread::ptr> ths;
+    for (int i = 0; i < 3; ++i) {
+        ths.push_back(tigerkin::Thread::ptr(new tigerkin::Thread(&thread_test_func, "co_test_" + std::to_string(i))));
+    }
+    for (size_t i = 0; i < ths.size(); ++i) {
+        ths[i]->join();
+    }
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "thread test end";
+}
+
+int main(int argc, char **argv) {
+    tigerkin::Thread::SetName("main");
+    std::cout << "coroutine_test start" << std::endl;
+    tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
+    // simple_test();
+    thread_test();
+    std::cout << "coroutine_test end" << std::endl;
     return 0;
 }
