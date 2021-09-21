@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "../src/log.h"
+#include "../src/macro.h"
 #include "../src/thread.h"
 
 int cnt = 0;

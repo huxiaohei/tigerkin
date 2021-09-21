@@ -7,6 +7,22 @@
 #include "log.h"
 #include "util.h"
 
+#define TIGERKIN_LOG_DEBUG(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::DEBUG)
+#define TIGERKIN_LOG_INFO(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::INFO)
+#define TIGERKIN_LOG_WARN(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::WARN)
+#define TIGERKIN_LOG_ERROR(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::ERROR)
+#define TIGERKIN_LOG_FATAL(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::FATAL)
+
+#define TIGERKIN_LOG_FMT_DEBUG(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::DEBUG, fmt, __VA_ARGS__)
+#define TIGERKIN_LOG_FMT_INFO(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::INFO, fmt, __VA_ARGS__)
+#define TIGERKIN_LOG_FMT_WARN(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::WARN, fmt, __VA_ARGS__)
+#define TIGERKIN_LOG_FMT_ERROR(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::ERROR, fmt, __VA_ARGS__)
+#define TIGERKIN_LOG_FMT_FATAL(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::FATAL, fmt, __VA_ARGS__)
+
+#define TIGERKIN_LOG_ROOT() tigerkin::SingletonLoggerMgr::GetInstance()->getRoot()
+#define TIGERKIN_LOG_NAME(name) tigerkin::SingletonLoggerMgr::GetInstance()->getLogger(#name)
+
+
 #define TIGERKIN_ASSERT(x)                                                                            \
     if (!(x)) {                                                                                       \
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "\nASSERTION: " #x                           \

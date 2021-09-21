@@ -6,9 +6,11 @@
  ****************************************************************/
 
 #include "util.h"
-#include "log.h"
-#include "coroutine.h"
+
 #include <execinfo.h>
+
+#include "coroutine.h"
+#include "macro.h"
 
 namespace tigerkin {
 

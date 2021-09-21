@@ -5,10 +5,10 @@
  * Copyright (c) 2021 虎小黑
  ****************************************************************/
 
-#include "./thread.h"
+#include "thread.h"
 
-#include "./log.h"
-#include "./util.h"
+#include "macro.h"
+#include "util.h"
 
 namespace tigerkin {
 

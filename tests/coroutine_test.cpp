@@ -5,12 +5,14 @@
 * Copyright (c) 2021 虎小黑
 ****************************************************************/
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include "../src/log.h"
-#include "../src/thread.h"
 #include "../src/coroutine.h"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "../src/macro.h"
+#include "../src/thread.h"
 
 void co_test_funcA() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A start";
@@ -54,7 +56,7 @@ int main(int argc, char **argv) {
     tigerkin::Thread::SetName("main");
     std::cout << "coroutine_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
-    // simple_test();
+    simple_test();
     thread_test();
     std::cout << "coroutine_test end" << std::endl;
     return 0;

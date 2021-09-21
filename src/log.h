@@ -32,12 +32,6 @@
                                                                           time(0), tigerkin::Thread::GetName())))                                            \
         .getSS()
 
-#define TIGERKIN_LOG_DEBUG(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::DEBUG)
-#define TIGERKIN_LOG_INFO(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::INFO)
-#define TIGERKIN_LOG_WARN(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::WARN)
-#define TIGERKIN_LOG_ERROR(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::ERROR)
-#define TIGERKIN_LOG_FATAL(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::FATAL)
-
 #define TIGERKIN_LOG_FMT_LEVEL(logger, level, fmt, ...)                                                                                                      \
     if (logger->getLevel() <= level)                                                                                                                         \
     tigerkin::LogEventWrap(tigerkin::LogEvent::ptr(new tigerkin::LogEvent(logger,                                                                            \
@@ -45,17 +39,6 @@
                                                                           time(0), tigerkin::Thread::GetName())))                                            \
         .getEvent()                                                                                                                                          \
         ->format(fmt, __VA_ARGS__)
-
-#define TIGERKIN_LOG_FMT_DEBUG(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::DEBUG, fmt, __VA_ARGS__)
-#define TIGERKIN_LOG_FMT_INFO(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::INFO, fmt, __VA_ARGS__)
-#define TIGERKIN_LOG_FMT_WARN(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::WARN, fmt, __VA_ARGS__)
-#define TIGERKIN_LOG_FMT_ERROR(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::ERROR, fmt, __VA_ARGS__)
-#define TIGERKIN_LOG_FMT_FATAL(logger, fmt, ...) TIGERKIN_LOG_FMT_LEVEL(logger, tigerkin::LogLevel::FATAL, fmt, __VA_ARGS__)
-
-#define TIGERKIN_LOG_ROOT() tigerkin::SingletonLoggerMgr::GetInstance()->getRoot()
-#define TIGERKIN_LOG_NAME(name) tigerkin::SingletonLoggerMgr::GetInstance()->getLogger(#name)
-
-using namespace std;
 
 namespace tigerkin {
 

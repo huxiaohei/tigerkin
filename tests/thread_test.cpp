@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "../src/log.h"
+#include "../src/macro.h"
 
 void threadExecutCallback() {
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "thread begin runing\n"

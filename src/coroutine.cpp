@@ -10,7 +10,6 @@
 #include <atomic>
 
 #include "config.h"
-#include "log.h"
 #include "macro.h"
 
 namespace tigerkin {

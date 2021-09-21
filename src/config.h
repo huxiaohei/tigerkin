@@ -21,7 +21,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "log.h"
+#include "macro.h"
 #include "mutex.h"
 
 namespace tigerkin {
@@ -53,7 +53,7 @@ class LexicalCast<std::string, std::vector<T>> {
 template <class T>
 class LexicalCast<std::vector<T>, std::string> {
    public:
-    std::string operator()(const vector<T> &v) {
+    std::string operator()(const std::vector<T> &v) {
         YAML::Node node;
         for (auto &it : v) {
             node.push_back(YAML::Load(LexicalCast<T, std::string>()(it)));
@@ -83,7 +83,7 @@ class LexicalCast<std::string, std::list<T>> {
 template <class T>
 class LexicalCast<std::list<T>, std::string> {
    public:
-    std::string operator()(const list<T> &v) {
+    std::string operator()(const std::list<T> &v) {
         YAML::Node node;
         for (auto &it : v) {
             node.push_back(YAML::Load(LexicalCast<T, std::string>()(it)));

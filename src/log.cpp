@@ -37,7 +37,7 @@ class LexicalCast<std::string, LoggerDefine> {
                     appenderDef.type = 1;
                     appenderDef.level = LogLevel::fromString(it["level"].as<std::string>());
                 } else {
-                    throw invalid_argument(v);
+                    throw std::invalid_argument(v);
                 }
                 loggerDef.appenders.push_back(appenderDef);
             }
@@ -68,7 +68,7 @@ class LexicalCast<LoggerDefine, std::string> {
                     n["file"] = it.file;
                 } else {
                     std::cerr << "type error:" << it.type << std::endl;
-                    throw invalid_argument("type error");
+                    throw std::invalid_argument("type error");
                 }
                 node["appenders"].push_back(n);
             }

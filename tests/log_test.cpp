@@ -5,10 +5,9 @@
  * Copyright (c) 2021 虎小黑
  ****************************************************************/
 
-#include "../src/log.h"
-
 #include <iostream>
 
+#include "../src/macro.h"
 #include "../src/thread.h"
 #include "../src/util.h"
 
@@ -82,7 +81,7 @@ void threadRun2() {
 void testThreadSafe() {
     // 可以注释 Mutex 中的实现，让互斥锁失效
     // 在没有互斥锁的情况下日志混乱
-    vector<tigerkin::Thread::ptr> thrs;
+    std::vector<tigerkin::Thread::ptr> thrs;
     for (int i = 0; i < 50; ++i) {
         tigerkin::Thread::ptr th1(new tigerkin::Thread(&threadRun1, "testThreadSafe1_" + std::to_string(i)));
         tigerkin::Thread::ptr th2(new tigerkin::Thread(&threadRun2, "testThreadSafe2_" + std::to_string(i)));
@@ -104,7 +103,7 @@ void threadPerformance() {
 
 void testPerformance() {
     uint64_t now = time(0);
-    vector<tigerkin::Thread::ptr> thrs;
+    std::vector<tigerkin::Thread::ptr> thrs;
     for (int i = 0; i < 2; ++i) {
         tigerkin::Thread::ptr th(new tigerkin::Thread(&threadPerformance, "testThreadSafe1_" + std::to_string(i)));
         thrs.push_back(th);
