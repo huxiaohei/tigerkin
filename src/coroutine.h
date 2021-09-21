@@ -57,6 +57,7 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
     static void SetThis(Coroutine *co);
     static Coroutine::ptr GetThis();
     static uint64_t GetCoId();
+    static Coroutine * GetStackCo();
     static void Yield();
     static uint64_t TotalCo();
     static void MainFunc();

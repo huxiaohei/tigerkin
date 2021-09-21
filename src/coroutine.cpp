@@ -8,6 +8,8 @@
 #include "coroutine.h"
 
 #include <atomic>
+#include <map>
+#include <stack>
 
 #include "config.h"
 #include "macro.h"
@@ -19,6 +21,8 @@ static std::atomic<uint64_t> s_co_cnt{0};
 
 static thread_local Coroutine *t_co = nullptr;
 static thread_local Coroutine::ptr t_threadCo = nullptr;
+static thread_local std::stack<Coroutine *> t_stackCos;
+static thread_local std::map<uint64_t, bool> t_mapCoIds;
 
 static ConfigVar<uint32_t>::ptr g_co_stack_size = Config::Lookup<uint32_t>("co.stackSize", 1024 * 1024, "CoStackSize");
 
@@ -41,6 +45,9 @@ Coroutine::Coroutine() {
     if (getcontext(&m_ctx)) {
         TIGERKIN_ASSERT2(false, "GET CONTEXT ERROR");
     }
+    TIGERKIN_ASSERT2(t_stackCos.empty(), "The bottom item from the stack must be main coroutine");
+    t_stackCos.push(this);
+    t_mapCoIds.insert({m_id, true});
     ++s_co_cnt;
 }
 
@@ -78,7 +85,7 @@ Coroutine::~Coroutine() {
             SetThis(nullptr);
         }
     }
-    // TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "DESTROY COROUTIN: " << m_id;
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "DESTROY COROUTIN: " << m_id;
 }
 
 void Coroutine::reset(std::function<void()> cb) {
@@ -98,20 +105,60 @@ void Coroutine::reset(std::function<void()> cb) {
 }
 
 void Coroutine::resume() {
-    SetThis(this);
-    TIGERKIN_ASSERT(m_state != State::EXECING);
-    m_state = State::EXECING;
-    if (swapcontext(&t_threadCo->m_ctx, &m_ctx)) {
-        TIGERKIN_ASSERT2(false, "SWAP CONTEXT ERROR");
+    if (t_mapCoIds.find(m_id) == t_mapCoIds.end()) {
+        t_stackCos.top()->m_state = State::YIELD;
+        m_ctx.uc_link = &t_stackCos.top()->m_ctx;
+        t_stackCos.push(this);
+        t_mapCoIds.insert({m_id, true});
+        m_state = State::EXECING;
+        SetThis(this);
+        if (swapcontext(m_ctx.uc_link, &m_ctx)) {
+            TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "SWAP CONTEXT ERROR";
+            t_stackCos.pop();
+            SetThis(t_stackCos.top());
+            t_stackCos.top()->m_state = State::EXECING;
+            setcontext(&t_stackCos.top()->m_ctx);
+        }
+    } else {
+        if (t_stackCos.top() != this) {
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "Only the croutine from stack top can call resume";
+            return;
+        }
+        if (t_stackCos.top()->m_state == State::EXECING) {
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "The coroutine is already resumed";
+            return;
+        }
+        if (t_stackCos.top()->m_state == State::TERMINAL || t_stackCos.top()->m_state == State::EXCEPT) {
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "The coroutine is already exited";
+            return;
+        }
+        m_state = State::EXECING;
+        SetThis(this);
+        if (swapcontext(&t_threadCo->m_ctx, &m_ctx)) {
+            TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "SWAP CONTEXT ERROR";
+            m_state = State::YIELD;
+            SetThis(t_threadCo.get());
+            setcontext(&t_threadCo->m_ctx);
+        }
     }
 }
 
 void Coroutine::yield() {
+    if (this != t_stackCos.top()) {
+        return;
+    }
     SetThis(t_threadCo.get());
     m_state = m_state == State::EXECING ? State::YIELD : m_state;
     if (swapcontext(&m_ctx, &t_threadCo->m_ctx)) {
         TIGERKIN_ASSERT2(false, "SWAP CONTEXT ERROR");
     }
+}
+
+Coroutine * Coroutine::GetStackCo() {
+    if (t_stackCos.empty()) {
+        return GetThis().get();
+    }
+    return t_stackCos.top();
 }
 
 void Coroutine::SetThis(Coroutine *co) {
@@ -138,7 +185,7 @@ uint64_t Coroutine::GetCoId() {
 
 void Coroutine::Yield() {
     Coroutine::ptr curCo = GetThis();
-    TIGERKIN_ASSERT2(curCo != t_threadCo, "YIELD THE MAIN COROUTINE FROM CURRENT THREAD IS ERROR");
+    TIGERKIN_ASSERT2(curCo != t_threadCo, "You can not yield the main coroutine");
     curCo->yield();
 }
 
@@ -160,9 +207,12 @@ void Coroutine::MainFunc() {
         curCo->m_state = State::EXCEPT;
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "COROUTINE EXCEPT";
     }
-    Coroutine *rawPtr = curCo.get();
+    t_stackCos.pop();
+    t_mapCoIds.erase(curCo->m_id);
     curCo.reset();
-    rawPtr->yield();
+    t_stackCos.top()->m_state = State::EXECING;
+    TIGERKIN_ASSERT2(swapcontext(&t_co->m_ctx, &t_stackCos.top()->m_ctx) != 0, "SWAP CONTEXT ERROR");
+
 }
 
 }  // namespace tigerkin

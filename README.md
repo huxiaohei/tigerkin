@@ -32,6 +32,7 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
   * 支持自定义类型(需要自己写对于的偏特化模板)
 
 ## 日志系统(同步)
+
   * 日志器支持配置初始化
   * 支持标准控制台输出
   * 支持文件输出
@@ -97,7 +98,7 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger info";
 
 ## 线程系统
 
-基于对`pthread`库的封装，使用灵活简单
+基于对`pthread`的封装，使用灵活简单
 
 * 信号量
 * 支持读写分离互斥锁
@@ -126,3 +127,68 @@ th->join();
 ```
 
 ## 协程系统
+
+基于对`ucontext`的封装，使用灵活简单
+
+* 非对称设计，每个协程`coroutine`只有唤醒`resume`和挂起`yield`两个操作，从哪里唤醒，当挂起之后就会回到该哪里
+
+```mermaid
+sequenceDiagram
+Thread A ->> Coroutine A: resume
+Coroutine A ->> Coroutine B: resume
+Coroutine B ->> Coroutine C: resume
+Coroutine C -->> Coroutine B: yield
+Coroutine B -->> Coroutine A: yield
+Coroutine A -->> Thread A: yield
+```
+  ```cpp
+
+  void co_test_funcA() {
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A start";
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A end";
+  }
+
+  void co_test_funcB() {
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B start";
+      tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcA));
+      co->resume();
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B end";
+
+  }
+
+  void co_test_funcC() {
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B start";
+      tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcB));
+      co->resume();
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B end";
+  }
+
+  void co_test() {
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test start";
+      tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcC));
+      co->resume();
+      TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test end";
+  }
+
+  int main(int argc, char **argv) {
+      tigerkin::Thread::SetName("main");
+      std::cout << "coroutine_test start" << std::endl;
+      tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
+      co_test();
+      std::cout << "coroutine_test end" << std::endl;
+      return 0;
+  }
+  ```
+* 每个线程都有一个对应主协程，并且始终在线程的协程栈栈底
+  * 线程在初始化第一个协程的时候，首先会获取当前上下文初始化`Main Coroutine`压入`push`栈底，然后在创建对应协程返回
+  * 在一个协程被唤醒的时候，同时这个协程也被压入栈顶
+  * 如果协程栈的栈顶协程`Coroutien`被手动`yield`，那么对应的线程将会切回到主协程`Main Coroutine`继续执行
+* 只有还未加入协程栈的协程和栈顶的协程才能手动`resume`
+  * 未加入协程唤醒
+    ```cpp
+    co->resume();
+    ```
+  * 栈顶协程唤醒
+    ```cpp
+    tigerkin::Coroutine::GetStackCo()->resume();
+    ```

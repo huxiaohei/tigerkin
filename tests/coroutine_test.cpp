@@ -52,12 +52,44 @@ void thread_test() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "thread test end";
 }
 
+void co_test_funcC() {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine C start";
+    tigerkin::Coroutine::GetThis()->yield();
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine C end";
+}
+
+void co_test_funcD() {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine D start";
+    tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcC));
+    co->resume();
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine D end";
+
+}
+
+void co_test_funcE() {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine E start";
+    tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcD));
+    co->resume();
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine E end";
+
+}
+
+void muilt_coroutine_test() {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test start";
+    tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcE));
+    co->resume();
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test";
+    tigerkin::Coroutine::GetStackCo()->resume();
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test end";
+}
+
 int main(int argc, char **argv) {
     tigerkin::Thread::SetName("main");
     std::cout << "coroutine_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     simple_test();
     thread_test();
+    muilt_coroutine_test();
     std::cout << "coroutine_test end" << std::endl;
     return 0;
 }
