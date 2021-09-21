@@ -48,7 +48,7 @@ void Scheduler::start() {
     TIGERKIN_ASSERT(m_threads.empty());
     m_threads.resize(m_threadCnt);
     for (size_t i = 0; i < m_threadCnt; ++i) {
-        m_threads[i].reset(new Thread(std::bind(&Scheduler::run, this), "Scheduler_" + m_name + std::to_string(i + 1)));
+        m_threads[i].reset(new Thread(std::bind(&Scheduler::run, this), "Scheduler_" + m_name + "_" + std::to_string(i + 1)));
         m_threadIds.push_back(m_threads[i]->getId());
     }
     lock.unlock();
