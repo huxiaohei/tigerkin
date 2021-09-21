@@ -15,6 +15,7 @@ set(LIB_SRC
 		src/config.cpp
 		src/thread.cpp
 		src/coroutine.cpp
+		src/scheduler.cpp
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})
@@ -45,6 +46,8 @@ target_link_libraries(test_thread ${LIBS})
 add_executable(test_coroution tests/coroutine_test.cpp)
 target_link_libraries(test_coroution ${LIBS})
 
+add_executable(test_scheduler tests/scheduler_test.cpp)
+target_link_libraries(test_scheduler ${LIBS})
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)

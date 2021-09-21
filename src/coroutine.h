@@ -37,7 +37,7 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
      */
     void reset(std::function<void()> cb);
     /**
-     * From the current thread's main coroutine switch to the coroutine
+     * From the current coroutine switch to another coroutine that just call the resume function
      */
     void resume();
     /**
