@@ -23,6 +23,7 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
     enum State {
         INIT,
         YIELD,
+        READY,
         EXECING,
         TERMINAL,
         EXCEPT
@@ -47,6 +48,10 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
      * Get the coroutine id
      */
     uint64_t getId() const { return m_id; }
+    /**
+     * Get the coroutine state
+     */
+    State getState() const { return m_state; }
     
    public:
     static void SetThis(Coroutine *co);
