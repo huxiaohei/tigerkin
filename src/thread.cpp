@@ -45,10 +45,10 @@ Thread::Thread(std::function<void()> cb, const std::string &name)
                                                       << "\t name:" << name;
         throw std::logic_error("pthread_create error");
     }
-    // wait a semaphore is to ensure the thread is running or executed when the constructor function executed
-    //  1. in the thread callback function, the sem_post function will be called to increase semaphore's value
-    //  2. when semaphore's value is bigger than zero, the wait will exit
-    //  3. so when the constructor function is executed, the thread is running or executed
+    // Waiting a semaphore is to ensure the thread is running or executed when the constructor function is executed
+    //  1. in the thread of callback function, the sem_post function will be called to increase semaphore's value
+    //  2. once semaphore's value is above zero, the waiting will exit
+    //  3. so the constructor function is already exited, the thread is running or executed
     m_semaphore.wait();
 }
 
