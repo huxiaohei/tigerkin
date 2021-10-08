@@ -37,7 +37,7 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
      */
     void reset(std::function<void()> cb);
     /**
-     * From the current coroutine switch to another coroutine that just call the resume function
+     * From the current coroutine switch to another coroutine
      */
     void resume();
     /**
@@ -49,6 +49,10 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
      */
     uint64_t getId() const { return m_id; }
     /**
+     * Get the coroutine stack id
+     */
+    uint64_t getStackId() const { return m_stackId; }
+    /**
      * Get the coroutine state
      */
     State getState() const { return m_state; }
@@ -57,15 +61,17 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
     static void SetThis(Coroutine *co);
     static Coroutine::ptr GetThis();
     static uint64_t GetCoId();
-    static Coroutine * GetStackCo();
     static void Yield();
-    static uint64_t TotalCo();
+    static void Resume(uint64_t stackId);
+    static size_t CoCnt();
+    static size_t CoStackCnt();
     static void MainFunc();
     
 
    private:
     Coroutine();
     uint64_t m_id = 0;
+    uint64_t m_stackId = 0;
     uint32_t m_stackSize = 0;
     State m_state = INIT;
     ucontext_t m_ctx;

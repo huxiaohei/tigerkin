@@ -79,7 +79,7 @@ void muilt_coroutine_test() {
     tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcE));
     co->resume();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test";
-    tigerkin::Coroutine::GetStackCo()->resume();
+    tigerkin::Coroutine::Resume(co->getStackId());
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test end";
 }
 
@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
     tigerkin::Thread::SetName("main");
     std::cout << "coroutine_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
-    simple_test();
-    thread_test();
+    // simple_test();
+    // thread_test();
     muilt_coroutine_test();
     std::cout << "coroutine_test end" << std::endl;
     return 0;

@@ -8,6 +8,7 @@
 #include "util.h"
 
 #include <execinfo.h>
+#include <time.h>
 
 #include "coroutine.h"
 #include "macro.h"
@@ -47,6 +48,17 @@ std::string BacktraceToString(int size, int skip, const std::string &prefix) {
         ss << prefix << bt[i] << std::endl;
     }
     return ss.str();
+}
+
+std::time_t GetNowMillisecond() {
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds>
+        tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    return tp.time_since_epoch().count();
+}
+
+std::time_t GetNowSecond() {
+    time_t timestamp;
+    return time(&timestamp);
 }
 
 }  // namespace tigerkin
