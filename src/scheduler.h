@@ -9,6 +9,7 @@
 #define __SCHEDULE_H__
 
 #include <atomic>
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -98,6 +99,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
 
         Task(std::function<void()> *f, pid_t id = 0)
             : threadId(id) {
+            cb.swap(*f);
         }
 
         Task() {
@@ -129,7 +131,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
    private:
     Mutex m_mutex;
     std::vector<Thread::ptr> m_threads;
-    std::vector<Task> m_taskPools;
+    std::list<Task> m_taskPools;
     std::string m_name;
 };
 

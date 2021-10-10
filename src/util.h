@@ -23,7 +23,7 @@ pid_t GetThreadId();
 uint64_t GetCoroutineId();
 
 void Backtrace(std::vector<std::string> &bt, int size, int skip = 1);
-std::string BacktraceToString(int size, int skip = 2, const std::string &prefix = "\t");
+std::string BacktraceToString(int size = 100, int skip = 2, const std::string &prefix = "\t");
 
 std::time_t GetNowMillisecond();
 std::time_t GetNowSecond();

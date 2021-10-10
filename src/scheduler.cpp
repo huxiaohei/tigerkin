@@ -40,7 +40,8 @@ Scheduler *Scheduler::GetThis() {
 void Scheduler::start() {
     Mutex::Lock lock(m_mutex);
     if (!m_stopping) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "The scheduler can not restart while it is stopping";
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "The scheduler can not restart while it is stopping"
+                                                      << BacktraceToString();
         return;
     }
     m_stopping = false;
@@ -59,11 +60,6 @@ void Scheduler::start() {
 }
 
 void Scheduler::stop() {
-    // if (m_rootThreadId != 0) {
-    //     TIGERKIN_ASSERT2(GetThis() == this, "In the case of using `userCaller = true`, the scheduler can only be stopped in the thread that created this scheduler");
-    // } else {
-    //     TIGERKIN_ASSERT2(GetThis() != this, "In the case of using `userCaller = false`, the scheduler cannot be stopped in the thread that created this scheduler");
-    // }
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "STOP";
     m_stopping = true;
     m_autoStop = true;
@@ -79,14 +75,13 @@ void Scheduler::run() {
     setThis();
     t_runingCo = Coroutine::GetThis();
     Coroutine::ptr idleCo(new Coroutine(std::bind(&Scheduler::idle, this)));
-    Coroutine::ptr cbCo;
     Task task;
     while (true) {
         task.reset();
         bool needTickle = false;
         {
             Mutex::Lock lock(m_mutex);
-            auto it = m_taskPools.begin();
+            std::list<Task>::iterator it = m_taskPools.begin();
             while (it != m_taskPools.end()) {
                 if (it->threadId != 0 && it->threadId != GetThreadId()) {
                     ++it;
@@ -111,12 +106,8 @@ void Scheduler::run() {
                 schedule(task.co, task.threadId);
             }
         } else if (task.cb) {
-            if (cbCo) {
-                cbCo->reset(task.cb);
-            } else {
-                cbCo.reset(new Coroutine(task.cb));
-            }
-            schedule(cbCo, task.threadId);
+            Coroutine::ptr co(new Coroutine(task.cb));
+            schedule(co, task.threadId);
         } else {
             if (idleCo->getState() == Coroutine::State::TERMINAL ||
                 idleCo->getState() == Coroutine::State::EXCEPT) {
