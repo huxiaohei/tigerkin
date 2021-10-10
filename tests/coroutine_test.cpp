@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
     tigerkin::Thread::SetName("main");
     std::cout << "coroutine_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
-    // simple_test();
-    // thread_test();
+    simple_test();
+    thread_test();
     muilt_coroutine_test();
     std::cout << "coroutine_test end" << std::endl;
     return 0;

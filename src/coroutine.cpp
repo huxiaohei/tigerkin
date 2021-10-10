@@ -71,7 +71,6 @@ Coroutine::Coroutine(std::function<void()> cb, size_t stackSize)
 Coroutine::~Coroutine() {
     --s_co_cnt;
     if (m_stack) {
-        std::cout << m_id << "   " << m_state << std::endl;
         TIGERKIN_ASSERT(m_state == State::INIT ||
                         m_state == State::TERMINAL ||
                         m_state == State::EXCEPT);
@@ -129,21 +128,28 @@ void Coroutine::resume() {
         }
         m_state = State::EXECING;
         SetThis(this);
-        if (swapcontext(m_ctx.uc_link, &m_ctx)) {
+        int swapFail = 0;
+        if (t_main_co->m_state == State::EXECING) {
+            t_main_co->m_state = State::YIELD;
+            swapFail = swapcontext(&t_main_co->m_ctx, &m_ctx);
+        } else {
+            swapFail = swapcontext(m_ctx.uc_link, &m_ctx);
+        }
+        if (swapFail) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "SWAP CONTEXT ERROR \n"
                                                           << BacktraceToString(10);
             m_state = State::EXCEPT;
-            coStack->pop();
-            if (coStack->empty()) {
+            t_map_co_stack.at(m_stackId)->pop();
+            if (t_map_co_stack.at(m_stackId)->empty()) {
+                delete t_map_co_stack.at(m_stackId);
                 t_map_co_stack.erase(m_stackId);
-                delete coStack;
                 SetThis(t_main_co.get());
                 t_main_co->m_state = State::EXECING;
                 setcontext(&t_main_co->m_ctx);
             } else {
-                coStack->top()->m_state = State::EXECING;
-                SetThis(coStack->top());
-                setcontext(&coStack->top()->m_ctx);
+                t_map_co_stack.at(m_stackId)->top()->m_state = State::EXECING;
+                SetThis(t_map_co_stack.at(m_stackId)->top());
+                setcontext(&t_map_co_stack.at(m_stackId)->top()->m_ctx);
             }
         }
     } else {
@@ -153,15 +159,16 @@ void Coroutine::resume() {
         m_stackId = ++s_stack_id;
         t_map_co_stack.insert({m_stackId, coStack});
         SetThis(this);
+        t_main_co->m_state = State::YIELD;
         m_state = State::EXECING;
-        if (swapcontext(m_ctx.uc_link, &m_ctx)) {
+        if (swapcontext(&t_main_co->m_ctx, &m_ctx)) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "SWAP CONTEXT ERROR \n"
                                                           << BacktraceToString(10);
             t_map_co_stack.erase(m_stackId);
             delete coStack;
             SetThis(t_main_co.get());
-            t_cur_co->m_state = State::YIELD;
-            setcontext(&t_cur_co->m_ctx);
+            t_main_co->m_state = State::EXECING;
+            setcontext(&t_main_co->m_ctx);
         }
     }
 }
@@ -234,7 +241,7 @@ size_t Coroutine::CoStackCnt() {
 }
 
 void Coroutine::MainFunc() {
-    Coroutine *curCo = GetThis().get();
+    Coroutine::ptr curCo = GetThis();
     try {
         TIGERKIN_ASSERT(curCo);
         curCo->m_cb();
@@ -258,10 +265,12 @@ void Coroutine::MainFunc() {
     } else {
         SetThis(t_map_co_stack.at(curCo->m_stackId)->top());
     }
+    curCo.reset();
     t_cur_co->m_state = State::EXECING;
-    if (swapcontext(&curCo->m_ctx, curCo->m_ctx.uc_link)) {
+    if (setcontext(&t_cur_co->m_ctx)) {
         std::cout << "error" << std::endl;
     }
+    std::cout << "error" << std::endl;
 }
 
 }  // namespace tigerkin
