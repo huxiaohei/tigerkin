@@ -25,7 +25,7 @@ static thread_local Coroutine *t_cur_co = nullptr;
 static thread_local Coroutine::ptr t_main_co = nullptr;
 static thread_local std::map<uint64_t, std::stack<Coroutine *> *> t_map_co_stack;
 
-static ConfigVar<uint32_t>::ptr g_co_stack_size = Config::Lookup<uint32_t>("co.stackSize", 1024 * 1024, "CoStackSize");
+static ConfigVar<uint32_t>::ptr g_co_stack_size = Config::Lookup<uint32_t>("tigerkin.coroutine.stackSize", 1024 * 1024, "StackSize");
 
 class MallocStackAllocator {
    public:
