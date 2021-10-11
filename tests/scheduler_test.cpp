@@ -16,7 +16,7 @@
 
 void co_func_a() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A start";
-    sleep(0.0001);
+    sleep(0.01);
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A end";
 }
 
@@ -25,7 +25,7 @@ void test_simple_scheduler() {
     time_t now = tigerkin::GetNowMillisecond();
     sc->start();
     sleep(5);
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         if (i % 2 == 0) {
             tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
             sc->schedule(co, 0);

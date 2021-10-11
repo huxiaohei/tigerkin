@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
 #include "coroutine.h"
 #include "macro.h"
 #include "mutex.h"
@@ -30,6 +31,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     virtual ~Scheduler();
 
     const std::string &getName() const { return m_name; }
+    const uint8_t getSchedulerTickleCaller() const;
     void start();
     void stop();
 
@@ -41,7 +43,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
             needTickle = scheduleWithoutLock(t, threadId);
         }
         if (needTickle) {
-            tickle();
+            tickle(true);
         }
     }
 
@@ -56,7 +58,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
             }
         }
         if (needTickle) {
-            tickle();
+            tickle(true);
         }
     }
 
@@ -67,7 +69,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     void setThis();
     void run();
     bool stopping();
-    virtual void tickle();
+    virtual void tickle(bool tickleCaller = false, bool force = false);
     virtual void idle();
 
    private:
@@ -117,16 +119,18 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
         if (task.co || task.cb) {
             m_taskPools.push_back(task);
         }
+        if (!needTickle && m_taskPools.size() > m_threadCnt * getSchedulerTickleCaller()) {
+            needTickle = true;
+        }
         return needTickle;
     }
 
    private:
-    pid_t callerThreadId = 0;
+    pid_t m_callerThreadId = 0;
     std::vector<pid_t> m_threadIds;
     size_t m_threadCnt = 0;
     std::atomic<size_t> m_activeThreadCnt = {0};
     std::atomic<size_t> m_idleThreadCnt = {0};
-    std::atomic<bool> m_callerThreadYield = {false};
     bool m_stopping = true;
     bool m_autoStop = false;
     Coroutine::ptr m_callerCo = nullptr;
