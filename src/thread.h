@@ -23,10 +23,14 @@ namespace tigerkin {
 class Thread {
    public:
     typedef std::shared_ptr<Thread> ptr;
+    typedef pthread_mutex_t ThreadMutex;
+    typedef pthread_cond_t ThreadCond;
 
     static Thread *GetThis();
     static const std::string &GetName();
     static void SetName(const std::string &name);
+    static void CondWait(ThreadCond &cond, ThreadMutex &mtx);
+    static void CondSignal(ThreadCond &cond, ThreadMutex &mtx, size_t cnt = 1);
 
     Thread(std::function<void()> cb, const std::string &name);
     ~Thread();

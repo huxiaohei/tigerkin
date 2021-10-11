@@ -20,8 +20,10 @@ Scheduler::Scheduler(size_t threads, bool useCaller, const std::string &name)
         TIGERKIN_ASSERT2(GetThis() == nullptr, "A thread can only have one scheduler");
         Thread::SetName("Scheduler_" + name + "_0");
         t_scheduler = this;
-        t_runingCo.reset(new Coroutine(std::bind(&Scheduler::run, this)));
-        m_threadIds.push_back(GetThreadId());
+        m_callerCo.reset(new Coroutine(std::bind(&Scheduler::run, this)));
+        t_runingCo = m_callerCo;
+        callerThreadId = GetThreadId();
+        m_threadIds.push_back(callerThreadId);
     }
     m_threadCnt = threads;
 }
@@ -63,11 +65,9 @@ void Scheduler::stop() {
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "STOP";
     m_stopping = true;
     m_autoStop = true;
-    for (size_t i = 0; i < m_threadCnt; ++i) {
-        tickle();
-    }
-    if (stopping()) {
-        return;
+    tickle();
+    for (size_t i = 0; i < m_threads.size(); ++i) {
+        m_threads[i]->join();
     }
 }
 
@@ -79,6 +79,7 @@ void Scheduler::run() {
     while (true) {
         task.reset();
         bool needTickle = false;
+        bool isActive = false;
         {
             Mutex::Lock lock(m_mutex);
             std::list<Task>::iterator it = m_taskPools.begin();
@@ -91,7 +92,12 @@ void Scheduler::run() {
                 TIGERKIN_ASSERT(it->co || it->cb);
                 task = *it;
                 m_taskPools.erase(it);
+                isActive = true;
+                ++m_activeThreadCnt;
                 break;
+            }
+            if (!m_taskPools.empty() && m_idleThreadCnt > 0) {
+                needTickle = true;
             }
         }
         if (needTickle) {
@@ -99,16 +105,23 @@ void Scheduler::run() {
         }
         if (task.co && (task.co->getState() != Coroutine::State::TERMINAL &&
                         task.co->getState() != Coroutine::State::EXCEPT)) {
-            ++m_activeThreadCnt;
             task.co->resume();
             --m_activeThreadCnt;
             if (task.co->getState() == Coroutine::State::READY) {
                 schedule(task.co, task.threadId);
             }
+            task.reset();
         } else if (task.cb) {
             Coroutine::ptr co(new Coroutine(task.cb));
             schedule(co, task.threadId);
+            --m_activeThreadCnt;
+            task.reset();
         } else {
+            if (isActive) {
+                --m_activeThreadCnt;
+                task.reset();
+                continue;
+            }
             if (idleCo->getState() == Coroutine::State::TERMINAL ||
                 idleCo->getState() == Coroutine::State::EXCEPT) {
                 TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE COROUTINE TERMINAL OR EXCEPT";
@@ -127,15 +140,35 @@ void Scheduler::setThis() {
 
 bool Scheduler::stopping() {
     Mutex::Lock lock(m_mutex);
-    return m_stopping && m_taskPools.empty() && m_activeThreadCnt == 0;
+    return m_autoStop && m_stopping && m_taskPools.empty() && m_activeThreadCnt == 0;
 }
 
 void Scheduler::tickle() {
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "TICKER";
+    Thread::CondSignal(m_cond, m_threadMutex, m_idleThreadCnt);
+    if (callerThreadId && m_callerThreadYield) {
+        if (m_callerThreadYield) {
+            m_callerThreadYield = false;
+            // Coroutine::Resume(m_callerCo->getStackId());
+        }
+    }
 }
 
 void Scheduler::idle() {
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE";
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE START";
+    if (callerThreadId && callerThreadId == GetThreadId()) {
+        while (!stopping()) {
+            m_callerThreadYield = true;
+            Coroutine::Yield();
+        }
+    }
+    while (!stopping()) {
+        Thread::CondWait(m_cond, m_threadMutex);
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE END";
+        Coroutine::Yield();
+        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE START";
+    }
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE END";
 }
 
 }  // namespace tigerkin

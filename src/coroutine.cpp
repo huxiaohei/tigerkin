@@ -83,7 +83,7 @@ Coroutine::~Coroutine() {
             SetThis(nullptr);
         }
     }
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "DESTROY COROUTIN: " << m_id;
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "DESTROY COROUTIN: " << m_id;
 }
 
 void Coroutine::reset(std::function<void()> cb) {

@@ -33,6 +33,21 @@ void Thread::SetName(const std::string &name) {
     cur_thread_name = name;
 }
 
+void Thread::CondWait(ThreadCond &cond, ThreadMutex &mtx) {
+    pthread_mutex_lock(&mtx);
+    pthread_cond_wait(&cond, &mtx);
+    pthread_mutex_unlock(&mtx);
+}
+
+void Thread::CondSignal(ThreadCond &cond, ThreadMutex &mtx, size_t cnt) {
+    pthread_mutex_lock(&mtx);
+    while (cnt != 0) {
+        pthread_cond_signal(&cond);
+        --cnt;
+    }
+    pthread_mutex_unlock(&mtx);
+}
+
 Thread::Thread(std::function<void()> cb, const std::string &name)
     : m_cb(cb), m_name(name) {
     if (name.empty()) {
@@ -77,7 +92,7 @@ void *Thread::Run(void *arg) {
         Thread *thread = (Thread *)arg;
         cur_thread = thread;
         cur_thread_name = thread->m_name;
-        thread->m_id = tigerkin::GetThreadId();
+        thread->m_id = GetThreadId();
         pthread_setname_np(pthread_self(), thread->m_name.substr(0, 15).c_str());
         std::function<void()> cb;
         cb.swap(thread->m_cb);

@@ -64,17 +64,9 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     static Scheduler *GetThis();
 
    protected:
-    std::vector<uint64_t> m_threadIds;
-    size_t m_threadCnt = 0;
-    std::atomic<size_t> m_activeThreadCnt = {0};
-    std::atomic<size_t> m_idleThreadCnt = {0};
-    bool m_stopping = true;
-    bool m_autoStop = false;
-
-   protected:
     void setThis();
     void run();
-    virtual bool stopping();
+    bool stopping();
     virtual void tickle();
     virtual void idle();
 
@@ -115,7 +107,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
 
    private:
     template <class OnceTask>
-    bool scheduleWithoutLock(OnceTask t, uint64_t threadId = 0) {
+    bool scheduleWithoutLock(OnceTask t, pid_t threadId = 0) {
         if (m_autoStop) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "Can not add task while the scheduler is stopping";
             return false;
@@ -129,7 +121,18 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     }
 
    private:
+    pid_t callerThreadId = 0;
+    std::vector<pid_t> m_threadIds;
+    size_t m_threadCnt = 0;
+    std::atomic<size_t> m_activeThreadCnt = {0};
+    std::atomic<size_t> m_idleThreadCnt = {0};
+    std::atomic<bool> m_callerThreadYield = {false};
+    bool m_stopping = true;
+    bool m_autoStop = false;
+    Coroutine::ptr m_callerCo = nullptr;
     Mutex m_mutex;
+    Thread::ThreadCond m_cond = PTHREAD_COND_INITIALIZER;
+    Thread::ThreadMutex m_threadMutex = PTHREAD_MUTEX_INITIALIZER;
     std::vector<Thread::ptr> m_threads;
     std::list<Task> m_taskPools;
     std::string m_name;

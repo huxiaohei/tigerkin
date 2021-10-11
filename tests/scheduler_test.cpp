@@ -15,12 +15,17 @@
 #include "../src/util.h"
 
 void co_func_a() {
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A";
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A start";
+    sleep(0.0001);
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A end";
 }
 
 void test_simple_scheduler() {
-    tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(1, true, "Scheduler"));
-    for (int i = 0; i < 10000; ++i) {
+    tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, true, "Scheduler"));
+    time_t now = tigerkin::GetNowMillisecond();
+    sc->start();
+    sleep(5);
+    for (int i = 0; i < 10; ++i) {
         if (i % 2 == 0) {
             tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
             sc->schedule(co, 0);
@@ -28,8 +33,7 @@ void test_simple_scheduler() {
             sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
         }
     }
-    time_t now = tigerkin::GetNowMillisecond();
-    sc->start();
+    sleep(5);
     sc->stop();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "cost time " << tigerkin::GetNowMillisecond() - now;
 }
