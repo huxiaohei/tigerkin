@@ -20,12 +20,11 @@ void co_func_a() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A end";
 }
 
-void test_simple_scheduler() {
-    tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, true, "Scheduler"));
+void test_scheduler_use_caller() {
+    tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, true, "UserCaller"));
     time_t now = tigerkin::GetNowMillisecond();
     sc->start();
-    sleep(5);
-    for (int i = 0; i < 1000; ++i) {
+    for (size_t i = 0; i < 10000; ++i) {
         if (i % 2 == 0) {
             tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
             sc->schedule(co, 0);
@@ -33,16 +32,33 @@ void test_simple_scheduler() {
             sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
         }
     }
-    sleep(5);
     sc->stop();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "cost time " << tigerkin::GetNowMillisecond() - now;
 }
+
+
+void test_scheduler() {
+    tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, false, "NotUseCaller"));
+    time_t now = tigerkin::GetNowMillisecond();
+    sc->start();
+    for (size_t i = 0; i < 10000; ++i) {
+        if (i % 2 == 0) {
+            tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
+        } else {
+            sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
+        }
+    }
+    sc->stop();
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "cost time " << tigerkin::GetNowMillisecond() - now;
+} 
+
 
 int main(int argc, char **argv) {
     std::cout << "test tigerkin scheduler start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     tigerkin::Thread::SetName("Main");
-    test_simple_scheduler();
+    test_scheduler_use_caller();
+    test_scheduler();
     std::cout << "test tigerkin scheduler end" << std::endl;
     return 0;
 }

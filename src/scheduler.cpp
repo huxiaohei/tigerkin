@@ -138,6 +138,8 @@ void Scheduler::run() {
                     Coroutine::Yield();
                 else
                     break;
+            } else if (m_autoStop) {
+                break;
             } else {
                 ++m_idleThreadCnt;
                 idleCo->resume();
