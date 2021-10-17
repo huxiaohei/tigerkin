@@ -111,22 +111,21 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
 		* `ps -aux | grep threadMutex_`
 		* `top -H -p [pid]`
 * 线程的挂起与恢复
-
-```cpp
-	void threadFunc() {
-		TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread begin runing\n"
-											<< "\tid:" << tigerkin::Thread::GetThis()->getId(); 
-		sleep(3);
-		TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread info:\n" 
-											<< "\tname:" << tigerkin::Thread::GetName() << "\n"
-											<< "\tid:" << tigerkin::Thread::GetThis()->getId()
-											<< "\t will end";
-		// 可以使用相关命令查看线程执行情况
-		sleep(20);
-	}
-	tigerkin::Thread::ptr th(new tigerkin::Thread(&threadFunc, "threadMutex_" + std::to_string(i)));
-	th->join();
-```
+	```cpp
+		void threadFunc() {
+			TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread begin runing\n"
+												<< "\tid:" << tigerkin::Thread::GetThis()->getId(); 
+			sleep(3);
+			TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread info:\n" 
+												<< "\tname:" << tigerkin::Thread::GetName() << "\n"
+												<< "\tid:" << tigerkin::Thread::GetThis()->getId()
+												<< "\t will end";
+			// 可以使用相关命令查看线程执行情况
+			sleep(20);
+		}
+		tigerkin::Thread::ptr th(new tigerkin::Thread(&threadFunc, "threadMutex_" + std::to_string(i)));
+		th->join();
+	```
 
 ## 协程系统
 
