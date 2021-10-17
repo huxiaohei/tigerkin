@@ -211,3 +211,86 @@ Coroutine A -->> Thread: resume(Main EXECING)
 
 ## 调度器
 
+对协程系统做的进一步封装，使用方便灵活
+* 支持多线程操作
+	* 初始化调度器时，线程数最好不要超过`CPU`核数(线程上线文切换会消耗一定资源)
+* 可指定协程在哪个线程中执行
+* 参数`userCaller`可设置度线程(创建调度器的线程)是否要参与协程任务的执行
+	* 当`userCaller`为`true`时，在`start`处将会创建相应子线程，调度线程和子线程都会执行协程池中的协程
+	* 当`userCaller`为`false`时，在`start`处将会创建相应子线程，子线程会执行协程池中的协程，而度线程会继续向下执行
+* 协程任务执行完毕时除调度线程外，所有线程都会陷入挂起状态(让出`CPU`资源)
+	* 调度线程将会返回到最初位置(调用调度器`start`的地方)继续向下执行
+	* 当有新的协程任务加入时，优先在子线程中执行(协程没有指定线程)
+	* 如果`userCaller`为`true`，当协程池中的任务达到一定数量(线程数的`tigerkin.scheduler.tickleCaller`倍)时，调度线程才会切换到执行协程任务
+
+```cpp
+	void co_func_a() {
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A start";
+		sleep(0.01);
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A end";
+	}
+
+	void test_scheduler_use_caller() {
+		tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, true, "UserCaller"));
+		sc->start();
+		for (size_t i = 0; i < 10000; ++i) {
+			if (i % 2 == 0) {
+				tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
+				sc->schedule(co, 0);
+			} else {
+				sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
+			}
+		}
+		sc->stop();
+	}
+
+	void test_scheduler() {
+		tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, false, "NotUseCaller"));
+		sc->start();
+		for (size_t i = 0; i < 10000; ++i) {
+			if (i % 2 == 0) {
+				tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
+			} else {
+				sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
+			}
+		}
+		sc->stop();
+	}
+```
+
+## I/O管理器
+
+基于`epoll`对调度器的扩展，使用方便，灵活，扩展性高
+* 支持多线程操作
+* 等待事件将会放入一个新的协程中执行
+
+```cpp
+	void co_func_a() {
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a start";
+		sock_a = socket(AF_INET, SOCK_STREAM, 0);
+		fcntl(sock_a, F_SETFL, O_NONBLOCK);
+		sockaddr_in addr;
+		memset(&addr, 0, sizeof(addr));
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(80);
+		inet_pton(AF_INET, "14.215.177.38", &addr.sin_addr.s_addr);
+		if (!connect(sock_a, (const sockaddr *)&addr, sizeof(addr))) {
+			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "connect fail";
+		} else if (errno == EINPROGRESS) {
+			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "add event";
+			tigerkin::IOManager::GetThis()->addEvent(sock_a, tigerkin::IOManager::Event::WRITE, []() {
+				TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect a";
+				close(sock_a);
+			});
+		} else {
+			TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
+		}
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a end";
+	}
+
+	void test_simple_test() {
+		tigerkin::IOManager iom(1, false, "IOManager");
+		std::cout << "test_simple_test" << std::endl;
+		iom.schedule(&co_func_a);
+	}
+```

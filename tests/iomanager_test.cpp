@@ -39,10 +39,6 @@ void co_func_a() {
             TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect a";
             close(sock_a);
         });
-        // tigerkin::IOManager::GetThis()->addEvent(sock, tigerkin::IOManager::Event::READ, []() {
-        //     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "read connect";
-        //     close(sock);
-        // });
     } else {
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
     }
@@ -66,10 +62,6 @@ void co_func_b() {
                 TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect b";
                 close(sock_b);
             });
-            // tigerkin::IOManager::GetThis()->addEvent(sock, tigerkin::IOManager::Event::READ, []() {
-            //     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "read connect";
-            //     close(sock);
-            // });
         } else {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
         }
@@ -81,7 +73,6 @@ void test_simple_test() {
     std::cout << "test_simple_test" << std::endl;
     iom.schedule(&co_func_a);
     iom.schedule(&co_func_b);
-    sleep(4);
 }
 
 
