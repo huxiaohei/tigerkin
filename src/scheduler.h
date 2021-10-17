@@ -65,13 +65,6 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
    public:
     static Scheduler *GetThis();
 
-   protected:
-    void setThis();
-    void run();
-    bool stopping();
-    virtual void tickle(bool tickleCaller = false, bool force = false);
-    virtual void idle();
-
    private:
     struct Task {
         Coroutine::ptr co;
@@ -126,20 +119,28 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     }
 
    private:
-    pid_t m_callerThreadId = 0;
     std::vector<pid_t> m_threadIds;
-    size_t m_threadCnt = 0;
     std::atomic<size_t> m_activeThreadCnt = {0};
     std::atomic<size_t> m_idleThreadCnt = {0};
     bool m_stopping = true;
     bool m_autoStop = false;
-    Coroutine::ptr m_callerCo = nullptr;
     Mutex m_mutex;
     Thread::ThreadCond m_cond = PTHREAD_COND_INITIALIZER;
     Thread::ThreadMutex m_threadMutex = PTHREAD_MUTEX_INITIALIZER;
     std::vector<Thread::ptr> m_threads;
-    std::list<Task> m_taskPools;
     std::string m_name;
+
+   protected:
+    pid_t m_callerThreadId = 0;
+    Coroutine::ptr m_callerCo = nullptr;
+    size_t m_threadCnt = 0;
+    std::list<Task> m_taskPools;
+    bool hasIdelThreads() { return m_idleThreadCnt > 0; };
+    void setThis();
+    void run();
+    virtual bool stopping();
+    virtual void tickle(bool tickleCaller = false, bool force = false);
+    virtual void idle();
 };
 
 }  // namespace tigerkin
