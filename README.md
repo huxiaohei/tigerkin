@@ -77,7 +77,7 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
 	TIGERKIN_LOG_FMT_INFO(logger, "fmt Hello %s", "World");
 ```
 
-```yml
+```yaml
 	logs:
 	- name: SYSTEM
 		level: DEBUG
@@ -262,6 +262,8 @@ Coroutine A -->> Thread: resume(Main EXECING)
 基于`epoll`对调度器的扩展，使用方便，灵活，扩展性高
 * 支持多线程操作
 * 等待事件将会放入一个新的协程中执行
+* 支持毫秒级定时器
+	* 支持条件定时器
 
 ```cpp
 	void co_func_a() {
@@ -292,4 +294,16 @@ Coroutine A -->> Thread: resume(Main EXECING)
 		std::cout << "test_simple_test" << std::endl;
 		iom.schedule(&co_func_a);
 	}
+
+	void test_timer() {
+		tigerkin::IOManager iom(2, false, "IOManager");
+		iom.addTimer(4000, []() {
+			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer a";
+		});
+		iom.addTimer(2000, []() {
+			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer b";
+		});
+		sleep(5);
+	}
+
 ```
