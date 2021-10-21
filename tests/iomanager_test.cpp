@@ -1,9 +1,9 @@
 /*****************************************************************
-* Description 
-* Email huxiaoheigame@gmail.com
-* Created on 2021/10/17
-* Copyright (c) 2021 虎小黑
-****************************************************************/
+ * Description
+ * Email huxiaoheigame@gmail.com
+ * Created on 2021/10/17
+ * Copyright (c) 2021 虎小黑
+ ****************************************************************/
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -46,26 +46,26 @@ void co_func_a() {
 }
 
 void co_func_b() {
-        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func b start";
-        sock_b = socket(AF_INET, SOCK_STREAM, 0);
-        fcntl(sock_b, F_SETFL, O_NONBLOCK);
-        sockaddr_in addr;
-        memset(&addr, 0, sizeof(addr));
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(80);
-        inet_pton(AF_INET, "121.14.77.221", &addr.sin_addr.s_addr);
-        if (!connect(sock_b, (const sockaddr *)&addr, sizeof(addr))) {
-            TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "connect fail";
-        } else if (errno == EINPROGRESS) {
-            TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "add event";
-            tigerkin::IOManager::GetThis()->addEvent(sock_b, tigerkin::IOManager::Event::WRITE, []() {
-                TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect b";
-                close(sock_b);
-            });
-        } else {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
-        }
-        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func b end";
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func b start";
+    sock_b = socket(AF_INET, SOCK_STREAM, 0);
+    fcntl(sock_b, F_SETFL, O_NONBLOCK);
+    sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(80);
+    inet_pton(AF_INET, "121.14.77.221", &addr.sin_addr.s_addr);
+    if (!connect(sock_b, (const sockaddr *)&addr, sizeof(addr))) {
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "connect fail";
+    } else if (errno == EINPROGRESS) {
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "add event";
+        tigerkin::IOManager::GetThis()->addEvent(sock_b, tigerkin::IOManager::Event::WRITE, []() {
+            TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect b";
+            close(sock_b);
+        });
+    } else {
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
+    }
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func b end";
 }
 
 void test_simple_test() {
@@ -75,13 +75,46 @@ void test_simple_test() {
     iom.schedule(&co_func_b);
 }
 
+void test_timer() {
+    tigerkin::IOManager iom(2, false, "TimerIOManager");
+    tigerkin::Timer::ptr timerA = iom.addTimer(
+        5000, []() {
+            TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer a";
+        },
+        true);
+    tigerkin::Timer::ptr timerB = iom.addTimer(
+        5000, []() {
+            TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer b";
+        },
+        false);
+    sleep(2);
+    timerA->reset(2000, []() {
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer a reset";
+    });
+    sleep(5);
+    timerA->cancel();
+    sleep(1);
+}
 
+
+void test_timer_insert() {
+    tigerkin::IOManager iom(2, false, "IOManager");
+    iom.addTimer(4000, []() {
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer a";
+    });
+    iom.addTimer(2000, []() {
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer b";
+    });
+    sleep(5);
+}
 
 int main(int argc, char **argv) {
     std::cout << "iomanager_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     tigerkin::Thread::SetName("iomanager test");
     test_simple_test();
+    test_timer();
+    test_timer_insert();
     std::cout << "iomanager_test end" << std::endl;
     return 0;
 }

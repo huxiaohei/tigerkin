@@ -17,6 +17,7 @@ set(LIB_SRC
 		src/coroutine.cpp
 		src/scheduler.cpp
 		src/iomanager.cpp
+		src/timer.cpp
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})

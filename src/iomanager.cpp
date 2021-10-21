@@ -1,9 +1,9 @@
 /*****************************************************************
-* Description IO管理器(基于epoll)
-* Email huxiaoheigame@gmail.com
-* Created on 2021/10/13
-* Copyright (c) 2021 虎小黑
-****************************************************************/
+ * Description IO管理器(基于epoll)
+ * Email huxiaoheigame@gmail.com
+ * Created on 2021/10/13
+ * Copyright (c) 2021 虎小黑
+ ****************************************************************/
 
 #include <errno.h>
 #include <fcntl.h>
@@ -63,6 +63,7 @@ IOManager::IOManager(size_t threadCnt, bool useCaller, const std::string &name)
 }
 
 IOManager::~IOManager() {
+    cancelAllTimers();
     stop();
     close(m_epfd);
     close(m_tickleFds[0]);
@@ -257,23 +258,27 @@ void IOManager::idle() {
         delete[] ptr;
     });
     int rt = 0;
+    std::vector<std::function<void()>> cbs; 
     while (!stopping()) {
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE START";
         rt = 0;
         do {
             static const int EPOLL_MAX_TIMEOUT = 5000;
-            rt = epoll_wait(m_epfd, events, MAX_EPOLL_EVENT, EPOLL_MAX_TIMEOUT);
-            if (rt > 0) break;
+            uint64_t nextTime = getNextTime();
+            rt = epoll_wait(m_epfd, events, MAX_EPOLL_EVENT, nextTime > EPOLL_MAX_TIMEOUT ? EPOLL_MAX_TIMEOUT : (int)nextTime);
+            if (rt > 0 || getNextTime() <= 0) break;
         } while (!stopping());
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "has msg"
-                                                     << " rt = " << rt;
+        
+        listExpiredCbs(cbs);
+        scheduleIterator(cbs.begin(), cbs.end());
+        cbs.clear();
+        
         for (int i = 0; i < rt; ++i) {
-            TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "has msg"
-                                                         << " i = " << i;
             epoll_event &event = events[i];
             if (event.data.fd == m_tickleFds[0]) {
                 uint8_t dummy;
-                while(read(m_tickleFds[0], &dummy, 1) == 1);
+                while (read(m_tickleFds[0], &dummy, 1) == 1) {
+                }
                 continue;
             }
             FdContext *fdCtx = (FdContext *)event.data.ptr;
@@ -319,8 +324,8 @@ void IOManager::idle() {
     }
 }
 
-IOManager *IOManager::GetThis() {
-    return dynamic_cast<IOManager *>(Scheduler::GetThis());
+void IOManager::onTimerRefresh() {
+    tickle();
 }
 
 void IOManager::fdContextsResize(size_t size) {
@@ -336,6 +341,10 @@ void IOManager::fdContextsResize(size_t size) {
             m_fdContexts[i]->fd = i;
         }
     }
+}
+
+IOManager *IOManager::GetThis() {
+    return dynamic_cast<IOManager *>(Scheduler::GetThis());
 }
 
 }  // namespace tigerkin

@@ -11,10 +11,11 @@
 #include <string>
 
 #include "scheduler.h"
+#include "timer.h"
 
 namespace tigerkin {
 
-class IOManager : public Scheduler {
+class IOManager : public Scheduler, public TimerManager {
    public:
     typedef std::shared_ptr<IOManager> ptr;
     typedef ReadWriteLock RWMutex;
@@ -64,6 +65,7 @@ class IOManager : public Scheduler {
     bool stopping() override;
     void tickle(bool tickleCaller = false, bool force = false) override;
     void idle() override;
+    void onTimerRefresh() override;
 
     void fdContextsResize(size_t size);
 
