@@ -38,63 +38,62 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
 * 支持文件输出
 	* 运行过程中日志文件被误删除，可自动重新生成
 * 支持格式自定义
-
     ```cpp
-        XX(m, MessageFormatItem),     // m:消息
-        XX(p, LevelFormatItem),       // p:日志级别
-        XX(r, ElapseFormatItem),      // r:累计毫秒数
-        XX(c, NameFormatItem),        // c:日志名称
-        XX(t, ThreadIdFormatItem),    // t:线程id
-        XX(n, NewLineFormatItem),     // n:换行
-        XX(d, DateTimeFormatItem),    // d:时间
-        XX(f, FileNameFormatItem),    // f:文件名
-        XX(l, LineFormatItem),        // l:行号
-        XX(T, TabFormatItem),         // T:Tab
-        XX(F, CoIdFormatItem),        // F:协程id
-        XX(N, ThreadNameFormatItem),  // N:线程名称
-    ```
+    XX(m, MessageFormatItem),     // m:消息
+    XX(p, LevelFormatItem),       // p:日志级别
+    XX(r, ElapseFormatItem),      // r:累计毫秒数
+    XX(c, NameFormatItem),        // c:日志名称
+    XX(t, ThreadIdFormatItem),    // t:线程id
+    XX(n, NewLineFormatItem),     // n:换行
+    XX(d, DateTimeFormatItem),    // d:时间
+    XX(f, FileNameFormatItem),    // f:文件名
+    XX(l, LineFormatItem),        // l:行号
+    XX(T, TabFormatItem),         // T:Tab
+    XX(F, CoIdFormatItem),        // F:协程id
+    XX(N, ThreadNameFormatItem),  // N:线程名称
+	```
 
 ```cpp
-	TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "default log";
-	TIGERKIN_LOG_FMT_INFO(TIGERKIN_LOG_ROOT(), "fmt default %s", "log");
+TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "default log";
+TIGERKIN_LOG_FMT_INFO(TIGERKIN_LOG_ROOT(), "fmt default %s", "log");
 ```
 
 ```cpp
-	tigerkin::Logger::ptr logger(new tigerkin::Logger("SimpleLogTest"));
-	tigerkin::LogAppender::ptr stdAppender(new tigerkin::StdOutLogAppend());
-	tigerkin::LogFormatter::ptr formater(new tigerkin::LogFormatter("%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"));
-	stdAppender->setFormate(formater);
-	logger->addAppender(stdAppender);
+tigerkin::Logger::ptr logger(new tigerkin::Logger("SimpleLogTest"));
+tigerkin::LogAppender::ptr stdAppender(new tigerkin::StdOutLogAppend());
+tigerkin::LogFormatter::ptr formater(new tigerkin::LogFormatter("%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"));
+stdAppender->setFormate(formater);
+logger->addAppender(stdAppender);
 
-	tigerkin::LogAppender::ptr fileAppender(new tigerkin::FileLogAppend("./simpleLog.txt"));
-	fileAppender->setFormate(formater);
-	logger->addAppender(fileAppender);
+tigerkin::LogAppender::ptr fileAppender(new tigerkin::FileLogAppend("./simpleLog.txt"));
+fileAppender->setFormate(formater);
+logger->addAppender(fileAppender);
 
-	TIGERKIN_LOG_DEBUG(logger) << "Hello World";
-	TIGERKIN_LOG_INFO(logger) << "Hello World";
+TIGERKIN_LOG_DEBUG(logger) << "Hello World";
+TIGERKIN_LOG_INFO(logger) << "Hello World";
 
-	TIGERKIN_LOG_FMT_DEBUG(logger, "fmt Hello %s", "World");
-	TIGERKIN_LOG_FMT_INFO(logger, "fmt Hello %s", "World");
+TIGERKIN_LOG_FMT_DEBUG(logger, "fmt Hello %s", "World");
+TIGERKIN_LOG_FMT_INFO(logger, "fmt Hello %s", "World");
 ```
 
-```yaml
-	logs:
-	- name: SYSTEM
+```conf
+logs:
+- name: SYSTEM
+	level: DEBUG
+	formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
+	appenders:
+	- type: StdOutLogAppender
 		level: DEBUG
-		formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
-		appenders:
-		- type: StdOutLogAppender
-			level: DEBUG
-		- type: FileLogAppender
-			level: INFO
-			file: ./system_log.txt
+	- type: FileLogAppender
+		level: INFO
+		file: ./system_log.txt
 ```
 
 ```cpp
-	tigerkin::SingletonLoggerMgr::getInstance()->addLoggers("xxx/log.yml", "logs");
+tigerkin::SingletonLoggerMgr::getInstance()->addLoggers("xxx/log.yml", "logs");
 		
-	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger debug";
-	TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger info";
+TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger debug";
+TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "I am system logger info";
 ```
 
 ## 线程系统
@@ -112,19 +111,19 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
 		* `top -H -p [pid]`
 * 线程的挂起与恢复
 	```cpp
-		void threadFunc() {
-			TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread begin runing\n"
-												<< "\tid:" << tigerkin::Thread::GetThis()->getId(); 
-			sleep(3);
-			TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread info:\n" 
-												<< "\tname:" << tigerkin::Thread::GetName() << "\n"
-												<< "\tid:" << tigerkin::Thread::GetThis()->getId()
-												<< "\t will end";
-			// 可以使用相关命令查看线程执行情况
-			sleep(20);
-		}
-		tigerkin::Thread::ptr th(new tigerkin::Thread(&threadFunc, "threadMutex_" + std::to_string(i)));
-		th->join();
+	void threadFunc() {
+		TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread begin runing\n"
+											   << "\tid:" << tigerkin::Thread::GetThis()->getId(); 
+		sleep(3);
+		TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "thread info:\n" 
+											   << "\tname:" << tigerkin::Thread::GetName() << "\n"
+											   << "\tid:" << tigerkin::Thread::GetThis()->getId()
+											   << "\t will end";
+		// 可以使用相关命令查看线程执行情况
+		sleep(20);
+	}
+	tigerkin::Thread::ptr th(new tigerkin::Thread(&threadFunc, "threadMutex_" + std::to_string(i)));
+	th->join();
 	```
 
 ## 协程系统
@@ -138,7 +137,7 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
     * 如果不是从`Main`协程唤醒，那么会将这个协程放入唤醒这个协程的协程所在栈的栈顶
 * `yield`只对栈顶协程生效，因为非栈顶协程已经是`YIELD`状态
   	```cpp
-		tigerkin::Coroutine::GetThis()->yield();
+	tigerkin::Coroutine::GetThis()->yield();
   	```
 * `resume`只对栈顶协程和未加入栈中的协程生效
   ```cpp
@@ -148,16 +147,16 @@ TIGERKIN_LOG_INFO(TIGERKIN_LOG_ROOT()) << "string:" << stringCfg->getValue();
 
 * 可以通过`stackId`来`resume`一个栈的栈顶协程
 	```cpp
-    	void coFunc() {
-			tigerkin::Coroutine::GetThis()->yield();
-		}
+    void coFunc() {
+		tigerkin::Coroutine::GetThis()->yield();
+	}
 
-		void main() {
-			tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&coFunc));
-			co->resume();
-			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test";
-			tigerkin::Coroutine::Resume(co->getStackId());
-		}
+	void main() {
+		tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&coFunc));
+		co->resume();
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test";
+		tigerkin::Coroutine::Resume(co->getStackId());
+	}
 	```
 
 ```mermaid
@@ -176,36 +175,34 @@ Coroutine A -->> Thread: resume(Main EXECING)
 ```
 
 ```cpp
-  	void co_test_funcC() {
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine C start";
-		tigerkin::Coroutine::GetThis()->yield();
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine C end";
-	}
+void co_test_funcC() {
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine C start";
+	tigerkin::Coroutine::GetThis()->yield();
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine C end";
+}
 
-	void co_test_funcB() {
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B start";
-		tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcC));
-		co->resume();
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B end";
+void co_test_funcB() {
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B start";
+	tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcC));
+	co->resume();
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B end";
+}
 
-	}
+void co_test_funcA() {
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A start";
+	tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcB));
+	co->resume();
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A end";
+}
 
-	void co_test_funcA() {
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A start";
-		tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcB));
-		co->resume();
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine A end";
-
-	}
-
-	void muilt_coroutine_test() {
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test start";
-		tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcA));
-		co->resume();
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test";
-		tigerkin::Coroutine::Resume(co->getStackId());
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test end";
-	}
+void muilt_coroutine_test() {
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test start";
+	tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcA));
+	co->resume();
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test";
+	tigerkin::Coroutine::Resume(co->getStackId());
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "muilt coroutine test end";
+}
 ```
 
 ## 调度器
@@ -223,38 +220,38 @@ Coroutine A -->> Thread: resume(Main EXECING)
 	* 如果`userCaller`为`true`，当协程池中的任务达到一定数量(线程数的`tigerkin.scheduler.tickleCaller`倍)时，调度线程才会切换到执行协程任务
 
 ```cpp
-	void co_func_a() {
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A start";
-		sleep(0.01);
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A end";
-	}
+void co_func_a() {
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A start";
+	sleep(0.01);
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A end";
+}
 
-	void test_scheduler_use_caller() {
-		tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, true, "UserCaller"));
-		sc->start();
-		for (size_t i = 0; i < 10000; ++i) {
-			if (i % 2 == 0) {
-				tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
-				sc->schedule(co, 0);
-			} else {
-				sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
-			}
+void test_scheduler_use_caller() {
+	tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, true, "UserCaller"));
+	sc->start();
+	for (size_t i = 0; i < 10000; ++i) {
+		if (i % 2 == 0) {
+			tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
+			sc->schedule(co, 0);
+		} else {
+			sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
 		}
-		sc->stop();
 	}
+	sc->stop();
+}
 
-	void test_scheduler() {
-		tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, false, "NotUseCaller"));
-		sc->start();
-		for (size_t i = 0; i < 10000; ++i) {
-			if (i % 2 == 0) {
-				tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
-			} else {
-				sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
-			}
+void test_scheduler() {
+	tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, false, "NotUseCaller"));
+	sc->start();
+	for (size_t i = 0; i < 10000; ++i) {
+		if (i % 2 == 0) {
+			tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
+		} else {
+			sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
 		}
-		sc->stop();
 	}
+	sc->stop();
+}
 ```
 
 ## I/O管理器
@@ -266,46 +263,45 @@ Coroutine A -->> Thread: resume(Main EXECING)
 	* 支持条件定时器
 
 ```cpp
-	void co_func_a() {
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a start";
-		sock_a = socket(AF_INET, SOCK_STREAM, 0);
-		fcntl(sock_a, F_SETFL, O_NONBLOCK);
-		sockaddr_in addr;
-		memset(&addr, 0, sizeof(addr));
-		addr.sin_family = AF_INET;
-		addr.sin_port = htons(80);
-		inet_pton(AF_INET, "14.215.177.38", &addr.sin_addr.s_addr);
-		if (!connect(sock_a, (const sockaddr *)&addr, sizeof(addr))) {
-			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "connect fail";
-		} else if (errno == EINPROGRESS) {
-			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "add event";
-			tigerkin::IOManager::GetThis()->addEvent(sock_a, tigerkin::IOManager::Event::WRITE, []() {
-				TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect a";
-				close(sock_a);
-			});
-		} else {
-			TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
-		}
-		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a end";
-	}
-
-	void test_simple_test() {
-		tigerkin::IOManager iom(1, false, "IOManager");
-		std::cout << "test_simple_test" << std::endl;
-		iom.schedule(&co_func_a);
-	}
-
-	void test_timer() {
-		tigerkin::IOManager iom(2, false, "IOManager");
-		iom.addTimer(4000, []() {
-			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer a";
+void co_func_a() {
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a start";
+	sock_a = socket(AF_INET, SOCK_STREAM, 0);
+	fcntl(sock_a, F_SETFL, O_NONBLOCK);
+	sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(80);
+	inet_pton(AF_INET, "14.215.177.38", &addr.sin_addr.s_addr);
+	if (!connect(sock_a, (const sockaddr *)&addr, sizeof(addr))) {
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "connect fail";
+	} else if (errno == EINPROGRESS) {
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "add event";
+		tigerkin::IOManager::GetThis()->addEvent(sock_a, tigerkin::IOManager::Event::WRITE, []() {
+			TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect a";
+			close(sock_a);
 		});
-		iom.addTimer(2000, []() {
-			TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer b";
-		});
-		sleep(5);
+	} else {
+		TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
 	}
+	TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a end";
+}
 
+void test_simple_test() {
+	tigerkin::IOManager iom(1, false, "IOManager");
+	std::cout << "test_simple_test" << std::endl;
+	iom.schedule(&co_func_a);
+}
+
+void test_timer() {
+	tigerkin::IOManager iom(2, false, "IOManager");
+	iom.addTimer(4000, []() {
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer a";
+	});
+	iom.addTimer(2000, []() {
+		TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer b";
+	});
+	sleep(5);
+}
 ```
 
 ## Hook
