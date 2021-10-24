@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -g -std=c++11 -Wall -Wno-depre
 
 find_library(YAMLCPP yaml-cpp)
 find_library(PTHREAD pthread)
+find_library(DLSYM dl)
 message("***", ${YAMLCPP})
 
 set(LIB_SRC
@@ -28,11 +29,12 @@ set(LIBS
 		TIGERKIN
 		${YAMLCPP}
 		${PTHREAD}
+		${DLSYM}
 	)
 
 add_executable(test_log tests/log_test.cpp)
 add_dependencies(test_log TIGERKIN)
-target_link_libraries(test_log TIGERKIN ${YAMLCPP} ${PTHREAD})
+target_link_libraries(test_log TIGERKIN ${YAMLCPP} ${PTHREAD} ${DLSYM})
 
 add_executable(test_util tests/util_test.cpp)
 target_link_libraries(test_util ${LIBS})

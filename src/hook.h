@@ -8,17 +8,24 @@
 #ifndef __TIGERKIN_HOOK_H__
 #define __TIGERKIN_HOOK_H__
 
+#include <unistd.h>
+
+
 namespace tigerkin {
 
 void setEnableHook(bool enable);
 bool isEnableHook();
 
-void blockSleep(unsigned int s);
-void blockUsleep(unsigned int s);
-
-void nonblockSleep(unsigned int s);
-void nonblockUsleep(unsigned int us);
-
 }  // namespace tigerkin
+
+extern "C" {
+
+typedef unsigned int (*sleep_func)(unsigned int seconds);
+extern sleep_func sleep_f;
+
+typedef int (*usleep_func)(useconds_t usec);
+extern usleep_func usleep_f;
+
+}
 
 #endif

@@ -14,12 +14,12 @@ void test_block_sleep() {
     tigerkin::IOManager iom(1, true, "test_block_sleep");
     iom.schedule([]() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "block sleep 2 second start";
-        tigerkin::blockSleep(2);
+        sleep_f(2);
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "block sleep 2 second end";
     });
     iom.schedule([]() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "block sleep 3 second start";
-        tigerkin::blockSleep(3);
+        sleep_f(3);
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "block sleep 3 second end";
     });
 }
@@ -28,15 +28,15 @@ void test_nonblock_sleep() {
     tigerkin::IOManager iom(1, false, "test_nonblock_sleep");
     iom.schedule([]() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "nonblock sleep 2 second start";
-        tigerkin::nonblockSleep(2);
+        sleep(2);
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "nonblock sleep 2 second end";
     });
     iom.schedule([]() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "nonblock sleep 3 second start";
-        tigerkin::nonblockSleep(3);
+        sleep(3);
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "nonblock sleep 3 second end";
     });
-    tigerkin::blockSleep(6);
+    sleep_f(6);
 }
 
 int main(int argc, char **argv) {
