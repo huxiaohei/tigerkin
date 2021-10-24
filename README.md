@@ -307,3 +307,17 @@ Coroutine A -->> Thread: resume(Main EXECING)
 	}
 
 ```
+
+## Hook
+
+基于`iomanager`实现，让一步代码写起来就和同步代码一样
+
+* 阻塞与非阻塞`sleep`
+	* 阻塞当前线程
+		```cpp
+		tigerkin::blockSleep(3);
+		```
+	* 不阻塞当前线程，等时间到后会自动切回来执行
+		```cpp
+		tigerkin::nonblockSleep(2);
+		```

@@ -6,6 +6,7 @@
 ****************************************************************/
 
 #include "scheduler.h"
+#include "hook.h"
 
 namespace tigerkin {
 
@@ -78,6 +79,7 @@ void Scheduler::stop() {
 }
 
 void Scheduler::run() {
+    setEnableHook(true);
     setThis();
     t_runingCo = Coroutine::GetThis();
     Coroutine::ptr idleCo(new Coroutine(std::bind(&Scheduler::idle, this)));
