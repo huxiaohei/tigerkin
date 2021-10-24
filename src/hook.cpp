@@ -19,7 +19,8 @@ static thread_local bool t_enable_hook = false;
 
 #define HOOK_FUNC(XX) \
     XX(sleep);        \
-    XX(usleep)
+    XX(usleep);       \
+    XX(nanosleep)
 
 void hookInit() {
     static bool isInit = false;
@@ -76,6 +77,22 @@ int usleep(useconds_t usec) {
     tigerkin::Coroutine::ptr co = tigerkin::Coroutine::GetThis();
     iom->addTimer(
         usec / 1000, [co, iom]() {
+            iom->schedule(co);
+        },
+        false);
+    tigerkin::Coroutine::Yield();
+    return 0;
+}
+
+int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
+    if (!tigerkin::isEnableHook()) {
+        return nanosleep_f(rqtp, rmtp);
+    }
+    int ms = rqtp->tv_sec * 1000 + rqtp->tv_nsec / 1000000;
+    tigerkin::IOManager *iom = tigerkin::IOManager::GetThis();
+    tigerkin::Coroutine::ptr co = tigerkin::Coroutine::GetThis();
+    iom->addTimer(
+        ms, [co, iom]() {
             iom->schedule(co);
         },
         false);
