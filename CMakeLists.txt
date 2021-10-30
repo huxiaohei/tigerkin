@@ -48,8 +48,8 @@ target_link_libraries(test_config ${LIBS})
 add_executable(test_thread tests/thread_test.cpp)
 target_link_libraries(test_thread ${LIBS})
 
-add_executable(test_coroution tests/coroutine_test.cpp)
-target_link_libraries(test_coroution ${LIBS})
+add_executable(test_coroutine tests/coroutine_test.cpp)
+target_link_libraries(test_coroutine ${LIBS})
 
 add_executable(test_scheduler tests/scheduler_test.cpp)
 target_link_libraries(test_scheduler ${LIBS})

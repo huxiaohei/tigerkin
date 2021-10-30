@@ -14,6 +14,7 @@
 
 #include <iostream>
 
+#include "../src/hook.h"
 #include "../src/iomamager.h"
 #include "../src/macro.h"
 #include "../src/scheduler.h"
@@ -87,15 +88,14 @@ void test_timer() {
             TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer b";
         },
         false);
-    sleep(2);
+    sleep_f(2);
     timerA->reset(2000, []() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer a reset";
     });
-    sleep(5);
+    sleep_f(5);
     timerA->cancel();
-    sleep(1);
+    sleep_f(1);
 }
-
 
 void test_timer_insert() {
     tigerkin::IOManager iom(2, false, "IOManager");
@@ -105,7 +105,7 @@ void test_timer_insert() {
     iom.addTimer(2000, []() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer b";
     });
-    sleep(5);
+    sleep_f(5);
 }
 
 int main(int argc, char **argv) {

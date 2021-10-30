@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+#include "../src/hook.h"
 #include "../src/macro.h"
 #include "../src/thread.h"
 #include "../src/util.h"
@@ -61,7 +62,7 @@ void testManagerLog() {
 }
 
 void threadRun1() {
-    sleep(1);
+    sleep_f(1);
     int i = 0;
     while (i < 100) {
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(MUTEX)) << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
@@ -70,7 +71,7 @@ void threadRun1() {
 }
 
 void threadRun2() {
-    sleep(1);
+    sleep_f(1);
     int i = 0;
     while (i < 100) {
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(MUTEX)) << "=========================================================";

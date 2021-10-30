@@ -10,13 +10,14 @@
 #include <iostream>
 #include <string>
 
+#include "../src/hook.h"
 #include "../src/macro.h"
 #include "../src/thread.h"
 #include "../src/util.h"
 
 void co_func_a() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A start";
-    sleep(0.01);
+    sleep_f(0.01);
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in co A end";
 }
 
@@ -36,7 +37,6 @@ void test_scheduler_use_caller() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "cost time " << tigerkin::GetNowMillisecond() - now;
 }
 
-
 void test_scheduler() {
     tigerkin::Scheduler::ptr sc(new tigerkin::Scheduler(3, false, "NotUseCaller"));
     time_t now = tigerkin::GetNowMillisecond();
@@ -50,8 +50,7 @@ void test_scheduler() {
     }
     sc->stop();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "cost time " << tigerkin::GetNowMillisecond() - now;
-} 
-
+}
 
 int main(int argc, char **argv) {
     std::cout << "test tigerkin scheduler start" << std::endl;

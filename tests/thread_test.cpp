@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "../src/macro.h"
+#include "../src/hook.h"
 
 void threadExecutCallback() {
     TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "thread begin runing\n"
@@ -17,7 +18,7 @@ void threadExecutCallback() {
                                                << "\tid:" << tigerkin::Thread::GetThis()->getId();
     // 1. simulate the thread cost time
     // 2. let you have time to check the thread info
-    sleep(20);
+    sleep_f(20);
     /*
         use cmd check the thread
             1. find pid `ps -aux | grep threadMutex_`

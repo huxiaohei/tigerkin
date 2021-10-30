@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "../src/hook.h"
 #include "../src/macro.h"
 #include "../src/thread.h"
 
@@ -31,7 +32,7 @@ void simple_test() {
 
 void co_test_funcB() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B start";
-    sleep(2);
+    sleep_f(2);
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine B end";
 }
 
@@ -63,7 +64,6 @@ void co_test_funcD() {
     tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcC));
     co->resume();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine D end";
-
 }
 
 void co_test_funcE() {
@@ -71,7 +71,6 @@ void co_test_funcE() {
     tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_test_funcD));
     co->resume();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in coroutine E end";
-
 }
 
 void muilt_coroutine_test() {

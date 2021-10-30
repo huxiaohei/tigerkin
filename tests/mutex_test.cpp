@@ -11,13 +11,14 @@
 
 #include "../src/macro.h"
 #include "../src/thread.h"
+#include "../src/hook.h"
 
 int cnt = 0;
 tigerkin::ReadWriteLock s_rwLock;
 
 void testNoLock() {
     for (int i = 0; i < 1000; ++i) {
-        sleep(0.001);
+        sleep_f(0.001);
         cnt += 1;
     }
 }
@@ -26,7 +27,7 @@ void testWriteLock() {
     // Write locks will cause threads to monopolize resources
     tigerkin::ReadWriteLock::WriteLock lock(s_rwLock);
     for (int i = 0; i < 1000; ++i) {
-        sleep(0.001);
+        sleep_f(0.001);
         cnt += 1;
     }
 }
@@ -35,7 +36,7 @@ void testReadLock() {
     // Read lock threads share resources
     tigerkin::ReadWriteLock::ReadLock lock(s_rwLock);
     for (int i = 0; i < 1000; ++i) {
-        sleep(0.001);
+        sleep_f(0.001);
         cnt += 1;
     }
 }
@@ -45,7 +46,7 @@ tigerkin::MutexLock s_mutexLock;
 void testMutex() {
     tigerkin::MutexLock::Lock lock(s_mutexLock);
     for (int i = 0; i < 1000; ++i) {
-        sleep(0.001);
+        sleep_f(0.001);
         cnt += 1;
     }
 }
@@ -55,7 +56,7 @@ tigerkin::SpinLock s_spinLock;
 void testSpin() {
     tigerkin::SpinLock::Lock lock(s_spinLock);
     for (int i = 0; i < 1000; ++i) {
-        sleep(0.001);
+        sleep_f(0.001);
         cnt += 1;
     }
 }

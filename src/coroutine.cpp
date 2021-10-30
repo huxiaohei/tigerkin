@@ -78,12 +78,10 @@ Coroutine::~Coroutine() {
     } else {
         TIGERKIN_ASSERT(!m_cb);
         TIGERKIN_ASSERT(m_state == State::EXECING);
-        Coroutine *co = t_cur_co;
-        if (co == this) {
+        if (t_main_co && t_cur_co == this) {
             SetThis(nullptr);
         }
     }
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "DESTROY COROUTIN: " << m_id;
 }
 
 void Coroutine::reset(std::function<void()> cb) {
