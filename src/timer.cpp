@@ -21,7 +21,7 @@ bool Timer::Comparator::operator()(const Timer::ptr &lth, const Timer::ptr &rth)
     if (!lth) {
         return false;
     }
-    if (lth->m_next < rth->m_next) {
+    if (lth->m_next <= rth->m_next) {
         return true;
     }
     return false;
