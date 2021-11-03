@@ -20,6 +20,7 @@ set(LIB_SRC
 		src/iomanager.cpp
 		src/timer.cpp
 		src/hook.cpp
+		src/fdmanager.cpp
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})

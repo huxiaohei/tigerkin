@@ -7,6 +7,12 @@
 
 #include "../src/hook.h"
 
+#include <arpa/inet.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "../src/iomamager.h"
 #include "../src/macro.h"
 
@@ -39,10 +45,48 @@ void test_nonblock_sleep() {
     sleep_f(6);
 }
 
+void test_socket() {
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(80);
+    inet_pton(AF_INET, "220.181.38.251", &addr.sin_addr.s_addr);
+
+    int rt = connect(sock, (const sockaddr *)&addr, sizeof(addr));
+    if (rt) {
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket connect error : " << rt << " errno : " << errno;
+        return;
+    }
+
+    const char data[] = "GET / HTTP/1.0\r\n\r\n";
+    rt = send(sock, data, sizeof(data), 0);
+    if (rt <= 0) {
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket send error : " << rt;
+        return;
+    }
+    std::cout << "-----" << std::endl;
+    std::string buff;
+    buff.resize(4096);
+
+    rt = recv(sock, &buff[0], buff.size(), 0);
+    if (rt <= 0) {
+        buff.resize(0);
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket recv error";
+        return;
+    }
+    buff.resize(rt);
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket recv msg \n" << buff;
+
+}
+
 int main(int argc, char **argv) {
-    std::cout << "hook_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "hook test start";
     test_block_sleep();
     test_nonblock_sleep();
-    std::cout << "hook_test end" << std::endl;
+    tigerkin::IOManager iom(1, false, "Hook");
+    iom.schedule(&test_socket);
+    sleep_f(3);
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "hook test end";
 }
