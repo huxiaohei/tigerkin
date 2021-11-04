@@ -44,6 +44,7 @@ void test_scheduler() {
     for (size_t i = 0; i < 10000; ++i) {
         if (i % 2 == 0) {
             tigerkin::Coroutine::ptr co(new tigerkin::Coroutine(&co_func_a));
+            sc->schedule(co);
         } else {
             sc->schedule([]() -> void { TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(SYSTEM)) << "in function A"; }, 0);
         }

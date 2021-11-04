@@ -65,7 +65,6 @@ void test_socket() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket send error : " << rt;
         return;
     }
-    std::cout << "-----" << std::endl;
     std::string buff;
     buff.resize(4096);
 
@@ -83,9 +82,9 @@ void test_socket() {
 int main(int argc, char **argv) {
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "hook test start";
-    test_block_sleep();
-    test_nonblock_sleep();
-    tigerkin::IOManager iom(1, false, "Hook");
+    // test_block_sleep();
+    // test_nonblock_sleep();
+    tigerkin::IOManager iom(3, false, "Hook");
     iom.schedule(&test_socket);
     sleep_f(3);
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "hook test end";

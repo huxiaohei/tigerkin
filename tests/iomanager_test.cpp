@@ -44,6 +44,7 @@ void co_func_a() {
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
     }
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a end";
+    sleep_f(4);
 }
 
 void co_func_b() {
