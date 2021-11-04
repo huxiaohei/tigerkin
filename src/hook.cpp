@@ -238,14 +238,16 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
     std::weak_ptr<SocketIoState> weekState(state);
     tigerkin::Timer::ptr timer;
     if (tigerkin::g_tcp_connect_timeout->getValue() > 0) {
-        timer = iom->addCondTimer(tigerkin::g_tcp_connect_timeout->getValue(), [weekState, sockfd, iom]() {
-            std::shared_ptr<SocketIoState> t = weekState.lock();
-            if (!t || t->canceled) {
-                return;
-            }
-            t->canceled = true;
-            iom->cancelEvent(sockfd, tigerkin::IOManager::Event::WRITE);
-        }, weekState);
+        timer = iom->addCondTimer(
+            tigerkin::g_tcp_connect_timeout->getValue(), [weekState, sockfd, iom]() {
+                std::shared_ptr<SocketIoState> t = weekState.lock();
+                if (!t || t->canceled) {
+                    return;
+                }
+                t->canceled = true;
+                iom->cancelEvent(sockfd, tigerkin::IOManager::Event::WRITE);
+            },
+            weekState);
     }
     if (iom->addEvent(sockfd, tigerkin::IOManager::Event::WRITE) == tigerkin::IOManager::ADD_EVENT_SUC) {
         tigerkin::Coroutine::Yield();
@@ -412,9 +414,16 @@ int fcntl(int fd, int cmd, ... /* arg */) {
         case F_SETLK:
         case F_SETLKW:
         case F_GETLK:
+#ifdef F_OFD_SETLK
         case F_OFD_SETLK:
+#endif
+#ifdef F_OFD_SETLKW
         case F_OFD_SETLKW:
-        case F_OFD_GETLK: {
+#endif
+#ifdef F_OFD_GETLK
+        case F_OFD_GETLK:
+#endif
+        {
             struct flock *arg = va_arg(ap, struct flock *);
             va_end(ap);
             return fcntl_f(fd, cmd, arg);
