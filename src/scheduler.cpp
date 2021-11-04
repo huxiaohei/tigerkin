@@ -114,6 +114,7 @@ void Scheduler::run() {
         if (task.co && (task.co->getState() != Coroutine::State::TERMINAL &&
                         task.co->getState() != Coroutine::State::EXCEPT)) {
             task.co->resume();
+            task.threadId = task.co->getThreadId();
             --m_activeThreadCnt;
             if (task.co->getState() == Coroutine::State::READY) {
                 schedule(task.co, task.threadId);

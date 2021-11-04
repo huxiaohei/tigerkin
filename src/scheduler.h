@@ -109,8 +109,11 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
         }
         bool needTickle = m_taskPools.empty();
         Task task(t, threadId);
-        if (task.co || task.cb) {
+        if (task.cb || task.co) {
             m_taskPools.push_back(task);
+        }
+        if (task.co && task.co->getThreadId() > 0) {
+            task.threadId = task.co->getThreadId();
         }
         if (!needTickle && m_taskPools.size() > m_threadCnt * getSchedulerTickleCaller()) {
             needTickle = true;
