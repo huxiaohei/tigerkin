@@ -53,6 +53,10 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
      */
     uint64_t getStackId() const { return m_stackId; }
     /**
+     * Get thread id
+     */
+    uint64_t getThreadId() const { return m_threadId; }
+    /**
      * Get the coroutine state
      */
     State getState() const { return m_state; }
@@ -73,6 +77,7 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
     uint64_t m_id = 0;
     uint64_t m_stackId = 0;
     uint32_t m_stackSize = 0;
+    uint64_t m_threadId = 0;
     State m_state = State::INIT;
     ucontext_t m_ctx;
     void *m_stack = nullptr;

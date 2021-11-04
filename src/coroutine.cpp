@@ -50,7 +50,7 @@ Coroutine::Coroutine() {
 }
 
 Coroutine::Coroutine(std::function<void()> cb, size_t stackSize)
-    : m_id(++s_co_id), m_cb(cb) {
+    : m_id(++s_co_id), m_threadId(0), m_cb(cb) {
     if (!t_main_co) {
         Coroutine::ptr mainCo(new Coroutine);
         t_main_co = mainCo;
@@ -112,6 +112,7 @@ void Coroutine::resume() {
         if (coStack->top() != this) {
             coStack->top()->m_state = State::YIELD;
             m_ctx.uc_link = &coStack->top()->m_ctx;
+            m_threadId = GetThreadId();
             coStack->push(this);
         }
         if (coStack->top()->m_state == State::EXECING) {
@@ -153,6 +154,7 @@ void Coroutine::resume() {
     } else {
         m_ctx.uc_link = &t_main_co->m_ctx;
         std::stack<Coroutine *> *coStack = new std::stack<Coroutine *>;
+        m_threadId = GetThreadId();
         coStack->push(this);
         m_stackId = ++s_stack_id;
         t_map_co_stack.insert({m_stackId, coStack});
