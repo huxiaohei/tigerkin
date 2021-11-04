@@ -37,6 +37,7 @@ class IOManager : public Scheduler, public TimerManager {
         typedef MutexLock Mutex;
         struct EventContext {
             Scheduler *scheduler = nullptr;
+            uint64_t threadId = 0;
             Coroutine::ptr co;
             std::function<void()> cb; 
         };

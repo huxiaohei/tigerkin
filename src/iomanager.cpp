@@ -11,6 +11,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
+#include "hook.h"
 #include "iomamager.h"
 #include "macro.h"
 
@@ -28,6 +29,7 @@ IOManager::FdContext::EventContext &IOManager::FdContext::getEventContext(const 
 
 void IOManager::FdContext::resetContext(IOManager::FdContext::EventContext &ctx) {
     ctx.scheduler = nullptr;
+    ctx.threadId = 0;
     ctx.co.reset();
     ctx.cb = nullptr;
 }
@@ -37,9 +39,9 @@ void IOManager::FdContext::triggerEvent(const IOManager::Event event) {
     events = (Event)(events & ~events);
     EventContext &ctx = getEventContext(event);
     if (ctx.cb) {
-        ctx.scheduler->schedule(&ctx.cb);
+        ctx.scheduler->schedule(&ctx.cb, ctx.threadId);
     } else {
-        ctx.scheduler->schedule(&ctx.co);
+        ctx.scheduler->schedule(&ctx.co, ctx.threadId);
     }
     ctx.scheduler = nullptr;
 }
@@ -54,7 +56,7 @@ IOManager::IOManager(size_t threadCnt, bool useCaller, const std::string &name)
     memset(&event, 0, sizeof(epoll_event));
     event.events = EPOLLIN | EPOLLET;
     event.data.fd = m_tickleFds[0];
-    rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK);
+    rt = fcntl_f(m_tickleFds[0], F_SETFL, O_NONBLOCK);
     TIGERKIN_ASSERT(!rt);
     rt = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_tickleFds[0], &event);
     TIGERKIN_ASSERT(!rt);
@@ -119,6 +121,7 @@ IOManager::IOManagerCode IOManager::addEvent(FdId fd, Event event, std::function
         eventCtx.cb.swap(cb);
     } else {
         eventCtx.co = Coroutine::GetThis();
+        eventCtx.threadId = GetThreadId();
         TIGERKIN_ASSERT(eventCtx.co->getState() == Coroutine::State::EXECING);
     }
     return IOManagerCode::ADD_EVENT_SUC;
@@ -258,7 +261,7 @@ void IOManager::idle() {
         delete[] ptr;
     });
     int rt = 0;
-    std::vector<std::function<void()>> cbs; 
+    std::vector<std::function<void()>> cbs;
     while (!stopping()) {
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE START";
         rt = 0;
@@ -268,11 +271,11 @@ void IOManager::idle() {
             rt = epoll_wait(m_epfd, events, MAX_EPOLL_EVENT, nextTime > EPOLL_MAX_TIMEOUT ? EPOLL_MAX_TIMEOUT : (int)nextTime);
             if (rt > 0 || getNextTime() <= 0) break;
         } while (!stopping());
-        
+
         listExpiredCbs(cbs);
         scheduleIterator(cbs.begin(), cbs.end());
         cbs.clear();
-        
+
         for (int i = 0; i < rt; ++i) {
             epoll_event &event = events[i];
             if (event.data.fd == m_tickleFds[0]) {
