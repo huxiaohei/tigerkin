@@ -55,7 +55,10 @@ void test_socket() {
 
     int rt = connect(sock, (const sockaddr *)&addr, sizeof(addr));
     if (rt) {
-        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket connect error : " << rt << " errno : " << errno;
+        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket connect error\n\t"
+                                                    << "rt:" << rt << "\n\t"
+                                                    << "errno : " << errno << "\n\t"
+                                                    << "strerror:" << strerror(errno);
         return;
     }
 
@@ -75,15 +78,15 @@ void test_socket() {
         return;
     }
     buff.resize(rt);
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket recv msg \n" << buff;
-
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket recv msg \n"
+                                                << buff;
 }
 
 int main(int argc, char **argv) {
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "hook test start";
-    // test_block_sleep();
-    // test_nonblock_sleep();
+    test_block_sleep();
+    test_nonblock_sleep();
     tigerkin::IOManager iom(3, false, "Hook");
     iom.schedule(&test_socket);
     sleep_f(3);

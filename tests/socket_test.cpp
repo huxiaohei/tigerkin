@@ -7,6 +7,7 @@
 
 #include "../src/socket.h"
 
+#include "../src/hook.h"
 #include "../src/iomamager.h"
 #include "../src/macro.h"
 
