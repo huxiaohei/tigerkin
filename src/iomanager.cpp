@@ -36,7 +36,7 @@ void IOManager::FdContext::resetContext(IOManager::FdContext::EventContext &ctx)
 
 void IOManager::FdContext::triggerEvent(const IOManager::Event event) {
     TIGERKIN_ASSERT(events & event);
-    events = (Event)(events & ~events);
+    events = (Event)(events & ~event);
     EventContext &ctx = getEventContext(event);
     if (ctx.cb) {
         ctx.scheduler->schedule(&ctx.cb, ctx.threadId);
@@ -189,11 +189,8 @@ bool IOManager::cancelEvent(FdId fd, Event event) {
                                                       << "\t" << strerror(errno);
         return false;
     }
-    --m_pendingEventCount;
-    fdCtx->events = newEvent;
     fdCtx->triggerEvent(event);
-    FdContext::EventContext &eventCtx = fdCtx->getEventContext(event);
-    fdCtx->resetContext(eventCtx);
+    --m_pendingEventCount;
     return true;
 }
 
@@ -205,6 +202,10 @@ bool IOManager::cancelAllEvent(FdId fd) {
     FdContext *fdCtx = m_fdContexts[fd];
     rLock.unlock();
     FdContext::Mutex::Lock fdLock(fdCtx->mutex);
+    if (!fdCtx->events) {
+        return false;
+    }
+
     epoll_event epEvent;
     epEvent.events = 0;
     epEvent.data.ptr = fdCtx;
@@ -221,18 +222,14 @@ bool IOManager::cancelAllEvent(FdId fd) {
         return false;
     }
     if (fdCtx->events & Event::READ) {
-        --m_pendingEventCount;
         fdCtx->triggerEvent(Event::READ);
-        FdContext::EventContext &eventCtx = fdCtx->getEventContext(Event::READ);
-        fdCtx->resetContext(eventCtx);
+        --m_pendingEventCount;
     }
     if (fdCtx->events & Event::WRITE) {
-        --m_pendingEventCount;
         fdCtx->triggerEvent(Event::WRITE);
-        FdContext::EventContext &eventCtx = fdCtx->getEventContext(Event::WRITE);
-        fdCtx->resetContext(eventCtx);
+        --m_pendingEventCount;
     }
-    TIGERKIN_ASSERT(fdCtx->events == 0);
+    TIGERKIN_ASSERT(fdCtx->events == IOManager::Event::NONE);
     return true;
 }
 
