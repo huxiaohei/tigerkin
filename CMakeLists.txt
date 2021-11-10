@@ -22,6 +22,7 @@ set(LIB_SRC
 		src/hook.cpp
 		src/fdmanager.cpp
 		src/address.cpp
+		src/socket.cpp
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})
@@ -65,6 +66,8 @@ target_link_libraries(test_hook ${LIBS})
 add_executable(test_address tests/address_test.cpp)
 target_link_libraries(test_address ${LIBS})
 
+add_executable(test_socket tests/socket_test.cpp)
+target_link_libraries(test_socket ${LIBS})
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)

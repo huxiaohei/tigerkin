@@ -18,7 +18,6 @@
 
 namespace tigerkin {
 
-static ConfigVar<uint16_t>::ptr g_tcp_connect_timeout = Config::Lookup<uint16_t>("tigerkin.socket.tcpConnectTimeout", 6000, "socket timeout");
 static thread_local bool t_enable_hook = false;
 
 #define HOOK_FUNC(XX) \
@@ -237,9 +236,9 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
     std::shared_ptr<SocketIoState> state(new SocketIoState);
     std::weak_ptr<SocketIoState> weekState(state);
     tigerkin::Timer::ptr timer;
-    if (tigerkin::g_tcp_connect_timeout->getValue() > 0) {
+    if (fdEntity->getConnectTimeout() > 0) {
         timer = iom->addCondTimer(
-            tigerkin::g_tcp_connect_timeout->getValue(), [weekState, sockfd, iom]() {
+            fdEntity->getConnectTimeout(), [weekState, sockfd, iom]() {
                 std::shared_ptr<SocketIoState> t = weekState.lock();
                 if (!t || t->canceled) {
                     return;

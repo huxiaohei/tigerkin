@@ -33,12 +33,14 @@ class FdEntity : public std::enable_shared_from_this<FdEntity> {
     int getFd() const { return m_fd; }
     uint64_t getRecvTimeout() const { return m_recvTimeout; }
     uint64_t getSendTimeout() const { return m_sendTimeout; }
+    uint64_t getConnectTimeout() const;
     Timer::ptr getTimer() const { return m_timer; }
 
     void setSysNonblock(bool flag) { m_isSysNonblock = flag; }
     void setUserNonblock(bool flag) { m_isUserNonblock = flag; }
     void setRecvTimeout(uint64_t timeout) { m_recvTimeout = timeout; }
     void setSendTimeout(uint64_t timeout) { m_sendTimeout = timeout; }
+    void setConnectTimeout(uint64_t timeout) { m_connectTimeout = timeout; }
     void setTimer(Timer::ptr timer) { m_timer = timer; }
 
    private:
@@ -50,6 +52,7 @@ class FdEntity : public std::enable_shared_from_this<FdEntity> {
     int m_fd = 0;
     uint64_t m_recvTimeout = 0;
     uint64_t m_sendTimeout = 0;
+    uint64_t m_connectTimeout = 0;
     Timer::ptr m_timer = nullptr;
 };
 
@@ -71,6 +74,7 @@ class FdManager : public std::enable_shared_from_this<FdManager> {
 };
 
 typedef tigerkin::Singleton<FdManager> SingletonFdMgr;
+typedef tigerkin::SingletonPtr<FdManager> SingletonFdMgrPtr;
 
 }  // namespace tigerkin
 

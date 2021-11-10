@@ -7,6 +7,14 @@
 #include "log.h"
 #include "util.h"
 
+#if defined __GNUC__ || defined __llvm__
+#define TIGERKIN_LIKELY(x) __builtin_expect(!!(x), 1)
+#define TIGERKIN_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define TIGERKIN_LICKLY(x) (x)
+#define TIGERKIN_UNLICKLY(x) (x)
+#endif
+
 #define TIGERKIN_LOG_DEBUG(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::DEBUG)
 #define TIGERKIN_LOG_INFO(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::INFO)
 #define TIGERKIN_LOG_WARN(logger) TIGERKIN_LOG_LEVEL(logger, tigerkin::LogLevel::WARN)
@@ -21,7 +29,6 @@
 
 #define TIGERKIN_LOG_ROOT() tigerkin::SingletonLoggerMgr::GetInstance()->getRoot()
 #define TIGERKIN_LOG_NAME(name) tigerkin::SingletonLoggerMgr::GetInstance()->getLogger(#name)
-
 
 #define TIGERKIN_ASSERT(x)                                                                            \
     if (!(x)) {                                                                                       \

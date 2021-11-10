@@ -100,7 +100,6 @@ IOManager::IOManagerCode IOManager::addEvent(FdId fd, Event event, std::function
     epoll_event epEvent;
     epEvent.events = EPOLLET | fdCtx->events | event;
     epEvent.data.ptr = fdCtx;
-
     int rt = epoll_ctl(m_epfd, op, fd, &epEvent);
     if (rt) {
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "epoll ctl fail:\n\t"

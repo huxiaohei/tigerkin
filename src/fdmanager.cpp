@@ -8,11 +8,15 @@
 #include "fdmanager.h"
 
 #include <sys/stat.h>
+
 #include <iostream>
 
+#include "config.h"
 #include "hook.h"
 
 namespace tigerkin {
+
+static ConfigVar<uint64_t>::ptr g_tcp_connect_timeout = Config::Lookup<uint64_t>("tigerkin.socket.tcpConnectTimeout", 6000, "socket timeout");
 
 FdEntity::FdEntity(int fd)
     : m_isInit(false), m_isSysNonblock(false), m_isUserNonblock(false), m_isSocket(false), m_isClosed(false), m_fd(fd), m_timer(nullptr) {
@@ -20,6 +24,13 @@ FdEntity::FdEntity(int fd)
 }
 
 FdEntity::~FdEntity() {
+}
+
+uint64_t FdEntity::getConnectTimeout() const {
+    if (m_sendTimeout < 0) {
+        return g_tcp_connect_timeout->getValue();
+    }
+    return m_sendTimeout;
 }
 
 bool FdEntity::init() {

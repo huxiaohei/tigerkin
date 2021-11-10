@@ -88,6 +88,14 @@ bool IpAddress::Lookup(std::vector<IpAddress::ptr> &rsts, const std::string &hos
     return true;
 }
 
+IpAddress::ptr IpAddress::LookupAny(const std::string &hosts, const std::string &service, int flags, int family, int type, int protocol) {
+    std::vector<IpAddress::ptr> rsts;
+    if (Lookup(rsts, hosts, service, flags, family, type, protocol)) {
+        return rsts[0];
+    }
+    return nullptr;
+}
+
 bool IpAddress::GetInterfaceAddress(std::multimap<std::string, std::pair<IpAddress::ptr, uint32_t>> &rsts, int family) {
     struct ifaddrs *nxt, *rst;
     if (getifaddrs(&rst) != 0) {
@@ -132,11 +140,6 @@ bool IpAddress::GetInterfaceAddress(std::multimap<std::string, std::pair<IpAddre
     }
 }
 
-IpV4Address::IpV4Address() {
-    memset(&m_addr, 0, sizeof(m_addr));
-    m_addr.sin_family = AF_INET;
-}
-
 IpV4Address::IpV4Address(const sockaddr_in &addr) {
     m_addr = addr;
 }
@@ -166,6 +169,10 @@ IpV4Address::IpV4Address(const char *address, uint16_t port) {
 }
 
 const sockaddr *IpV4Address::getAddr() const {
+    return (sockaddr *)&m_addr;
+}
+
+sockaddr *IpV4Address::getAddr() {
     return (sockaddr *)&m_addr;
 }
 
@@ -259,6 +266,10 @@ const sockaddr *IpV6Address::getAddr() const {
     return (sockaddr *)&m_addr;
 }
 
+sockaddr *IpV6Address::getAddr() {
+    return (sockaddr *)&m_addr;
+}
+
 const socklen_t IpV6Address::getAddrLen() const {
     return sizeof(m_addr);
 }
@@ -340,8 +351,16 @@ const sockaddr *UnixAddress::getAddr() const {
     return (sockaddr *)&m_addr;
 }
 
+sockaddr *UnixAddress::getAddr() {
+    return (sockaddr *)&m_addr;
+}
+
 const socklen_t UnixAddress::getAddrLen() const {
     return m_length;
+}
+
+void UnixAddress::setAddrLen(socklen_t len) {
+    m_length = len;
 }
 
 std::string UnixAddress::getPath() const {
@@ -361,11 +380,22 @@ std::ostream &UnixAddress::insert(std::ostream &os) const {
     return os << m_addr.sun_path;
 }
 
-UnknowAddress::UnknowAddress() {
+UnknowAddress::UnknowAddress(int family) {
     memset(&m_addr, 0, sizeof(m_addr));
+    m_family = family;
+}
+
+UnknowAddress::UnknowAddress(const sockaddr &addr) {
+    memset(&m_addr, 0, sizeof(m_addr));
+    m_family = addr.sa_family;
+    m_addr = addr;
 }
 
 const sockaddr *UnknowAddress::getAddr() const {
+    return (sockaddr *)&m_addr;
+}
+
+sockaddr *UnknowAddress::getAddr() {
     return (sockaddr *)&m_addr;
 }
 
