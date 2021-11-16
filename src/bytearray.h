@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "endian.h"
 #include "hook.h"
@@ -19,7 +20,7 @@ namespace tigerkin {
 
 class ByteArray {
    public:
-    std::shared_ptr<ByteArray> ptr;
+    typedef std::shared_ptr<ByteArray> ptr;
 
     ByteArray(size_t baseSize);
     ~ByteArray();
@@ -39,7 +40,7 @@ class ByteArray {
     bool writeToFile(const std::string& name) const;
     bool readFromFile(const std::string& name);
     uint64_t getReadBuffers(std::vector<iovec>& buffers, uint64_t len = ~0ull) const;
-    uint64_t getReadBuffers(std::vector<iovec>& buffers, uint64_t len, uint64_t position) const;
+    uint64_t getReadBuffers(std::vector<iovec>& buffers, uint64_t len, uint64_t offset) const;
     uint64_t getWriteBuffers(std::vector<iovec>& buffers, uint64_t len);
 
     void writeUint8(const uint8_t &value);
@@ -89,15 +90,14 @@ class ByteArray {
     };
 
     void addCapacity(size_t capacity);
-    void addCapacityTo(size_t capacity);
+    void addCapacityTo(uint64_t capacity);
     void write(const void *buf, size_t size);
     void read(void *buf, size_t size);
-    void read(void* buf, size_t size, size_t m_offset) const;
+    void read(void* buf, size_t size, size_t offset) const;
 
    private:
     int8_t m_endian;
     size_t m_baseSize;
-    size_t m_curNodePos;
     size_t m_size;
     size_t m_capacity;
     size_t m_offset;

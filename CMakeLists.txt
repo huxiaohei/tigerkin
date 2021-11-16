@@ -23,6 +23,7 @@ set(LIB_SRC
 		src/fdmanager.cpp
 		src/address.cpp
 		src/socket.cpp
+		src/bytearray.cpp
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})
@@ -68,6 +69,9 @@ target_link_libraries(test_address ${LIBS})
 
 add_executable(test_socket tests/socket_test.cpp)
 target_link_libraries(test_socket ${LIBS})
+
+add_executable(test_bytearray tests/bytearray_test.cpp)
+target_link_libraries(test_bytearray ${LIBS})
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)
