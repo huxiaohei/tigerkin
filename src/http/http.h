@@ -272,6 +272,7 @@ class HttpRequest {
     void setParams(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_params = v; }
     void setCookies(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_cookies = v; }
 
+    std::string getHeader(std::string &key, const std::string &def="");
     void delHeader(std::string &key);
     void setHeader(std::string &key, std::string &val);
     template <class T>
@@ -283,6 +284,7 @@ class HttpRequest {
         return getAs(key, def);
     }
 
+    std::string getParam(std::string &key, const std::string &def = "");
     void delParam(std::string &key);
     void setParam(std::string &key, std::string &val);
     template <class T>
@@ -294,6 +296,7 @@ class HttpRequest {
         return getAs(key, def);
     }
 
+    std::string getCookie(std::string &key, const std::string &def = "");
     void delCookie(std::string &key);
     void setCookie(std::string &key, std::string &val);
     template <class T>
@@ -304,6 +307,15 @@ class HttpRequest {
     T &getCookieAs(const std::string &key, const T &def = T()) {
         return getAs(key, def);
     }
+
+    std::ostream &dump(std::ostream &os) const;
+    std::string toString() const;
+
+    void init();
+    void initParam();
+    void initQueryParam();
+    void initBodyParam();
+    void initCookies();
 
    private:
     HttpMethod m_method;
