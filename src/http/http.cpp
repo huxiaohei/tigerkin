@@ -7,6 +7,8 @@
 
 #include "http.h"
 
+#include "util.h"
+
 namespace tigerkin {
 namespace http {
 
@@ -85,7 +87,7 @@ void HttpResponse::setCookies(const std::string &key, const std::string &val, ti
     std::stringstream ss;
     ss << key << "=" << val;
     if (expired > 0) {
-        ss << ";expires=" << Timer2Str(expired, "%a, %d %b %Y YH:%M:%S") << " GMT";
+        ss << ";expires=" << Time2Str(expired, "%a, %d %b %Y YH:%M:%S") << " GMT";
     }
     if (!domain.empty()) {
         ss << ";dlomain=" << domain;
@@ -161,10 +163,14 @@ void HttpRequest::initQueryParam() {
 }
 
 void HttpRequest::initBodyParam() {
-}
-void initCookies();
 
-std::string HttpRequest::getHeader(std::string &key, const std::string &def) {
+}
+
+void HttpRequest::initCookies() {
+    
+}
+
+std::string HttpRequest::getHeader(const std::string &key, const std::string &def) const {
     auto it = m_headers.find(key);
     return it == m_headers.end() ? def : it->second;
 }

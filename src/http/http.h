@@ -272,7 +272,7 @@ class HttpRequest {
     void setParams(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_params = v; }
     void setCookies(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_cookies = v; }
 
-    std::string getHeader(std::string &key, const std::string &def="");
+    std::string HttpRequest::getHeader(const std::string &key, const std::string &def = "") const ;
     void delHeader(std::string &key);
     void setHeader(std::string &key, std::string &val);
     template <class T>

@@ -28,6 +28,8 @@ std::string BacktraceToString(int size = 100, int skip = 2, const std::string &p
 std::time_t GetNowMillisecond();
 std::time_t GetNowSecond();
 
+std::string Time2Str(time_t ts = time(0), const std::string& format = "%Y-%m-%d %H:%M:%S");
+
 }  // namespace tigerkin
 
 #endif  // !__TIGERKIN__UTIL_H__

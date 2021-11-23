@@ -1,5 +1,5 @@
 /*****************************************************************
- * Description 
+ * Description
  * Email huxiaoheigame@gmail.com
  * Created on 2021/08/01
  * Copyright (c) 2021 虎小黑
@@ -59,6 +59,14 @@ std::time_t GetNowMillisecond() {
 std::time_t GetNowSecond() {
     time_t timestamp;
     return time(&timestamp);
+}
+
+std::string Time2Str(time_t ts, const std::string &format) {
+    struct tm tm;
+    localtime_r(&ts, &tm);
+    char buf[64];
+    strftime(buf, sizeof(buf), format.c_str(), &tm);
+    return buf;
 }
 
 }  // namespace tigerkin
