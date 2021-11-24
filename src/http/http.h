@@ -8,6 +8,8 @@
 #ifndef __TIGERKIN_HTTP_H__
 #define __TIGERKIN_HTTP_H__
 
+#include <sys/types.h>
+
 #include <boost/lexical_cast.hpp>
 #include <map>
 #include <memory>
@@ -156,7 +158,7 @@ struct CaseInsensitiveLess {
 
 template <class T>
 bool checkGetAs(const std::map<std::string, std::string, CaseInsensitiveLess> &m, const std::string &key, T &val, const T def = T()) {
-    auto it = m.find();
+    auto it = m.find(key);
     if (it == m.end()) {
         val = def;
         return false;
@@ -168,14 +170,14 @@ bool checkGetAs(const std::map<std::string, std::string, CaseInsensitiveLess> &m
         val = def;
         TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "CHECK GET AS WARN:\n\t"
                                                      << "key:" << key << "\n\t"
-                                                     << "what:" << e.what()
+                                                     << "what:" << e.what();
     }
     return false;
 }
 
 template <class T>
-T getAs(const std::map<std::string, std::string, CaseInsensitiveLess> &m, const std::string &key, const T def = T()) {
-    auto it = m.find();
+T getAs(const std::map<std::string, std::string, CaseInsensitiveLess> &m, const std::string &key, const T &def = T()) {
+    auto it = m.find(key);
     if (it == m.end()) {
         return def;
     }
@@ -184,14 +186,14 @@ T getAs(const std::map<std::string, std::string, CaseInsensitiveLess> &m, const 
     } catch (const std::exception &e) {
         TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "CHECK GET AS WARN:\n\t"
                                                      << "key:" << key << "\n\t"
-                                                     << "what:" << e.what()
+                                                     << "what:" << e.what();
     }
     return def;
 }
 
 class HttpResponse {
    public:
-    std::shared_ptr<HttpResponse> ptr;
+    typedef std::shared_ptr<HttpResponse> ptr;
 
     HttpResponse(uint8_t version = 0x11, bool close = true);
     HttpStatus getStatus() const { return m_status; }
@@ -264,48 +266,48 @@ class HttpRequest {
     void setClose(bool v) { m_close = v; }
     void setWebsocket(bool v) { m_websocket = v; }
     void setParserParamFlag(uint8_t v) { m_parserParamFlag = v; }
-    void setPath(std::string &v) { m_path = v; }
-    void setQuery(std::string &v) { m_query = v; }
-    void setFragment(std::string &v) { m_fragment = v; }
-    void setBody(std::string &v) { m_body = v; }
+    void setPath(const std::string &v) { m_path = v; }
+    void setQuery(const std::string &v) { m_query = v; }
+    void setFragment(const std::string &v) { m_fragment = v; }
+    void setBody(const std::string &v) { m_body = v; }
     void setHeaders(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_headers = v; }
     void setParams(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_params = v; }
     void setCookies(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_cookies = v; }
 
-    std::string HttpRequest::getHeader(const std::string &key, const std::string &def = "") const ;
-    void delHeader(std::string &key);
-    void setHeader(std::string &key, std::string &val);
+    std::string getHeader(const std::string &key, const std::string &def = "") const;
+    void delHeader(const std::string &key);
+    void setHeader(const std::string &key, const std::string &val);
     template <class T>
     bool checkGetHeaderAs(const std::string &key, T &v, const T &def = T()) {
-        return checkGetAs(key, v, def);
+        return checkGetAs(m_headers, key, v, def);
     }
     template <class T>
-    T &getHeaderAs(const std::string &key, const T &def = T()) {
-        return getAs(key, def);
+    T getHeaderAs(const std::string &key, const T &def = T()) {
+        return getAs(m_headers, key, def);
     }
 
-    std::string getParam(std::string &key, const std::string &def = "");
-    void delParam(std::string &key);
-    void setParam(std::string &key, std::string &val);
+    std::string getParam(const std::string &key, const std::string &def = "");
+    void delParam(const std::string &key);
+    void setParam(const std::string &key, const std::string &val);
     template <class T>
     bool checkGetParamAs(const std::string &key, T &v, const T &def = T()) {
-        return checkGetAs(key, v, def);
+        return checkGetAs(m_params, key, v, def);
     }
     template <class T>
-    T &checkGetParamAs(const std::string &key, const T &def = T()) {
-        return getAs(key, def);
+    T checkGetParamAs(const std::string &key, const T &def = T()) {
+        return getAs(m_params, key, def);
     }
 
-    std::string getCookie(std::string &key, const std::string &def = "");
-    void delCookie(std::string &key);
-    void setCookie(std::string &key, std::string &val);
+    std::string getCookie(const std::string &key, const std::string &def = "");
+    void delCookie(const std::string &key);
+    void setCookie(const std::string &key, const std::string &val);
     template <class T>
     bool checkGetCookieAs(const std::string &key, T &v, const T &def = T()) {
-        return checkGetAs(key, v, def);
+        return checkGetAs(m_cookies, key, v, def);
     }
     template <class T>
-    T &getCookieAs(const std::string &key, const T &def = T()) {
-        return getAs(key, def);
+    T getCookieAs(const std::string &key, const T &def = T()) {
+        return getAs(m_cookies, key, def);
     }
 
     std::ostream &dump(std::ostream &os) const;

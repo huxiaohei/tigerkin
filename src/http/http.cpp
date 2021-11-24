@@ -7,7 +7,7 @@
 
 #include "http.h"
 
-#include "util.h"
+#include "../util.h"
 
 namespace tigerkin {
 namespace http {
@@ -61,7 +61,7 @@ bool CaseInsensitiveLess::operator()(const std::string &lhs, const std::string &
     return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
 }
 
-HttpResponse::HttpResponse(uint8_t version = 0x11, bool close = true)
+HttpResponse::HttpResponse(uint8_t version, bool close)
     : m_status(HttpStatus::OK), m_version(version), m_close(close), m_websocket(false) {
 }
 
@@ -175,37 +175,37 @@ std::string HttpRequest::getHeader(const std::string &key, const std::string &de
     return it == m_headers.end() ? def : it->second;
 }
 
-void HttpRequest::delHeader(std::string &key) {
+void HttpRequest::delHeader(const std::string &key) {
     m_headers.erase(key);
 }
 
-void HttpRequest::setHeader(std::string &key, std::string &val) {
+void HttpRequest::setHeader(const std::string &key, const std::string &val) {
     m_headers[key] = val;
 }
 
-std::string HttpRequest::getParam(std::string &key, const std::string &def) {
+std::string HttpRequest::getParam(const std::string &key, const std::string &def) {
     auto it = m_params.find(key);
     return it == m_params.end() ? def : it->second;
 }
 
-void HttpRequest::delParam(std::string &key) {
+void HttpRequest::delParam(const std::string &key) {
     m_params.erase(key);
 }
 
-void HttpRequest::setParam(std::string &key, std::string &val) {
+void HttpRequest::setParam(const std::string &key, const std::string &val) {
     m_params[key] = val;
 }
 
-std::string HttpRequest::getCookie(std::string &key, const std::string &def) {
+std::string HttpRequest::getCookie(const std::string &key, const std::string &def) {
     auto it = m_cookies.find(key);
     return it == m_cookies.end() ? def : it->second;
 }
 
-void HttpRequest::delCookie(std::string &key) {
+void HttpRequest::delCookie(const std::string &key) {
     m_cookies.erase(key);
 }
 
-void HttpRequest::setCookie(std::string &key, std::string &val) {
+void HttpRequest::setCookie(const std::string &key, const std::string &val) {
     m_cookies[key] = val;
 }
 
