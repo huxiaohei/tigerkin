@@ -73,14 +73,14 @@ void HttpResponse::setHeader(const std::string &key, const std::string &value) {
     m_headers[key] = value;
 }
 
-std::string HttpResponse::getHeader(const std::string &key, const std::string &def) {
-    auto it = m_headers.find(key);
-    return it == m_headers.end() ? def : it->second;
-}
-
 void HttpResponse::setRedirect(const std::string &uri) {
     m_status = HttpStatus::FOUND;
     setHeader("Location", uri);
+}
+
+std::string HttpResponse::getHeader(const std::string &key, const std::string &def) {
+    auto it = m_headers.find(key);
+    return it == m_headers.end() ? def : it->second;
 }
 
 void HttpResponse::setCookies(const std::string &key, const std::string &val, time_t expired, const std::string &path, const std::string &domain, bool secure) {
@@ -163,11 +163,9 @@ void HttpRequest::initQueryParam() {
 }
 
 void HttpRequest::initBodyParam() {
-
 }
 
 void HttpRequest::initCookies() {
-    
 }
 
 std::string HttpRequest::getHeader(const std::string &key, const std::string &def) const {
@@ -214,8 +212,7 @@ std::ostream &HttpRequest::dump(std::ostream &os) const {
        << m_path
        << (m_query.empty() ? "" : "?") << m_query
        << (m_fragment.empty() ? "" : "#") << m_fragment
-       << " HTTP/"
-       << ((uint32_t)(m_version >> 4)) << "." << ((uint32_t)(m_version & 0x0F)) << "\r\n";
+       << " HTTP/" << ((uint32_t)(m_version >> 4)) << "." << ((uint32_t)(m_version & 0x0F)) << "\r\n";
     if (!m_websocket) {
         os << "connection: " << (m_close ? "close" : "keep-alive") << "\r\n";
     }
@@ -224,6 +221,13 @@ std::ostream &HttpRequest::dump(std::ostream &os) const {
             continue;
         }
         os << it.first << ":" << it.second << "\r\n";
+    }
+    if (m_cookies.size() > 0) {
+        os << "Set-Cookie:"
+           << "\n";
+        for (auto &it : m_cookies) {
+            os << "\t" << it.first << ":" << it.second << "\n";
+        }
     }
     if (!m_body.empty()) {
         os << "content-length: " << m_body.size() << "\r\n\r\n"

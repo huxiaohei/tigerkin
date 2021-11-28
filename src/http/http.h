@@ -210,6 +210,7 @@ class HttpResponse {
     void setBody(const std::string &v) { m_body = v; }
     void setReason(const std::string &v) { m_reason = v; }
     void setHeaders(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_headers = v; }
+    void setRedirect(const std::string &uri);
 
     void delHeader(const std::string &key);
     void setHeader(const std::string &key, const std::string &value);
@@ -225,7 +226,6 @@ class HttpResponse {
         return getAs(m_headers, key, def);
     }
 
-    void setRedirect(const std::string &uri);
     void setCookies(const std::string &key, const std::string &val, time_t expired = 0, const std::string &path = "", const std::string &domain = "", bool secure = false);
     std::string toString() const;
     std::ostream &dump(std::ostream &os) const;
