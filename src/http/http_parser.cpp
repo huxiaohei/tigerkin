@@ -86,6 +86,7 @@ HttpRequestParser::HttpRequestParser()
     m_parser.query_string = on_request_query_string;
     m_parser.http_version = on_request_http_version;
     m_parser.header_done = on_request_header_done;
+    m_parser.http_field = on_request_http_field;
     m_parser.data = this;
 }
 
@@ -116,15 +117,32 @@ uint64_t HttpRequestParser::GetHttpRequestMaxBodySize() {
 }
 
 void on_response_reason_phrase(void *data, const char *at, size_t length) {
+    HttpResponseParser *parser = static_cast<HttpResponseParser *>(data);
+    parser->getData()->setReason(std::string(at, length));
 }
 
 void on_response_status_code(void *data, const char *at, size_t length) {
+    HttpResponseParser *parser = static_cast<HttpResponseParser *>(data);
+    parser->getData()->setStatus((HttpStatus)atoi(at));
 }
 
 void on_response_chunk_size(void *data, const char *at, size_t length) {
 }
 
 void on_response_http_version(void *data, const char *at, size_t length) {
+    HttpResponseParser *parser = static_cast<HttpResponseParser *>(data);
+    uint8_t v = 0x11;
+    if (strncmp(at, "HTTP/1.1", length) == 0) {
+        v = 0x11;
+    } else if (strncmp(at, "HTTP/1.0", length) == 0) {
+        v = 0x10;
+    } else {
+        TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "INVALID HTTP RESPONSE VERSION:\n\t"
+            "version:" << std::string(at, length);
+        parser->setError(HttpParserError::INVALID_VERSION_ERROR);
+        return;
+    }
+    parser->getData()->setVersion(v);
 }
 
 void on_response_header_done(void *data, const char *at, size_t length) {
@@ -134,6 +152,12 @@ void on_response_last_chunk(void *data, const char *at, size_t length) {
 }
 
 void on_response_http_field(void *data, const char *field, size_t flen, const char *value, size_t vlen) {
+    HttpResponseParser *parse = static_cast<HttpResponseParser *>(data);
+    if (flen == 0) {
+        TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "INVALID HTTP REQUEST FIELD";
+        return;
+    }
+    parse->getData()->setHeader(std::string(field, flen), std::string(value, vlen));
 }
 
 HttpResponseParser::HttpResponseParser()
