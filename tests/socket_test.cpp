@@ -12,7 +12,7 @@
 #include "../src/macro.h"
 
 void test_socket_send() {
-    tigerkin::IpAddress::ptr address = tigerkin::IpAddress::LookupAny("www.baidu.com", "http");
+    tigerkin::IpAddress::ptr address = tigerkin::IpAddress::LookupAnyIpAddress("www.baidu.com:80");
     tigerkin::Socket::ptr sock = tigerkin::Socket::CreateTCPSocket();
     if (!sock->connect(address)) {
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "socket connect error\n\t"
