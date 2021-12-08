@@ -29,6 +29,10 @@ class Address {
 
     ~Address(){};
 
+    static Address::ptr Create(const sockaddr *addr, socklen_t addrlen);
+    static bool Lookup(std::vector<Address::ptr> &result, const ::std::string &host, int family = AF_INET, int type = 0, int protocol = 0);
+    static Address::ptr LookupAny(const std::string &host, int family = AF_INET, int type = 0, int protocol = 0);
+    
     int getFamily() const;
     virtual const sockaddr *getAddr() const = 0;
     virtual sockaddr *getAddr() = 0;
@@ -45,12 +49,16 @@ class IpAddress : public Address {
    public:
     typedef std::shared_ptr<IpAddress> ptr;
 
-    static bool Lookup(std::vector<IpAddress::ptr> &rsts, const std::string &host, const std::string &service = NULL, int flags = 0, int family = AF_INET, int type = SOCK_STREAM, int protocol = 0);
-    static IpAddress::ptr LookupAny(const std::string &host, const std::string &service = NULL, int flags = 0, int family = AF_INET, int type = SOCK_STREAM, int protocol = 0);
-    static bool GetInterfaceAddress(std::multimap<std::string, std::pair<IpAddress::ptr, uint32_t>> &rsts, int family = AF_INET);
-    virtual Address::ptr broadcastAddress(uint32_t prefixLen) = 0;
-    virtual Address::ptr networkAddress(uint32_t prefixLen) = 0;
-    virtual Address::ptr subnetMask(uint32_t prefixLen) = 0;
+    static IpAddress::ptr Create(const char *address, uint16_t port = 0);
+
+    static IpAddress::ptr LookupAnyIpAddress(const std::string &host, int family = AF_INET, int type = 0, int protocol = 0);
+    static bool GetInterfaceAddresses(std::multimap<std::string, std::pair<IpAddress::ptr, uint32_t>> &rsts, int family = AF_INET);
+    static bool GetInterfaceAddresses(std::vector<std::pair<IpAddress::ptr, uint32_t>> &result, const std::string &iface, int family = AF_INET);
+
+    virtual IpAddress::ptr broadcastAddress(uint32_t prefixLen) = 0;
+    virtual IpAddress::ptr networkAddress(uint32_t prefixLen) = 0;
+    virtual IpAddress::ptr subnetMask(uint32_t prefixLen) = 0;
+
     virtual uint16_t getPort() const = 0;
     virtual void setPort(uint16_t v) = 0;
 };
@@ -67,9 +75,11 @@ class IpV4Address : public IpAddress {
     sockaddr *getAddr() override;
     const socklen_t getAddrLen() const override;
     std::ostream &insert(std::ostream &os) const override;
-    Address::ptr broadcastAddress(uint32_t prefixLen) override;
-    Address::ptr networkAddress(uint32_t prefixLen) override;
-    Address::ptr subnetMask(uint32_t prefixLen) override;
+
+    IpAddress::ptr broadcastAddress(uint32_t prefixLen) override;
+    IpAddress::ptr networkAddress(uint32_t prefixLen) override;
+    IpAddress::ptr subnetMask(uint32_t prefixLen) override;
+
     uint16_t getPort() const override;
     void setPort(uint16_t v) override;
 
@@ -81,25 +91,26 @@ class IpV6Address : public IpAddress {
    public:
     typedef std::shared_ptr<IpV6Address> ptr;
 
+    static IpV6Address::ptr Create(const char *address, uint16_t port = 0);
+
     IpV6Address();
-    IpV6Address(const sockaddr_in6 &addr, const uint32_t prefixLen = 0);
-    IpV6Address(const uint8_t address[16], uint16_t port = 0, const uint32_t prefixLen = 0);
-    IpV6Address(const char *address, uint16_t port = 0, const uint32_t prefixLen = 0);
+    IpV6Address(const sockaddr_in6 &addr);
+    IpV6Address(const uint8_t address[16], uint16_t port = 0);
 
     const sockaddr *getAddr() const override;
     sockaddr *getAddr() override;
     const socklen_t getAddrLen() const override;
     std::ostream &insert(std::ostream &os) const override;
-    Address::ptr broadcastAddress(uint32_t prefixLen) override;
-    Address::ptr networkAddress(uint32_t prefixLen) override;
-    Address::ptr subnetMask(uint32_t prefixLen) override;
+
+    IpAddress::ptr broadcastAddress(uint32_t prefixLen) override;
+    IpAddress::ptr networkAddress(uint32_t prefixLen) override;
+    IpAddress::ptr subnetMask(uint32_t prefixLen) override;
+
     uint16_t getPort() const override;
     void setPort(uint16_t v) override;
-    const uint32_t getPrefixLen() const { return m_prefixLen; }
 
    private:
     sockaddr_in6 m_addr;
-    uint32_t m_prefixLen;
 };
 
 class UnixAddress : public Address {
@@ -107,13 +118,13 @@ class UnixAddress : public Address {
     typedef std::shared_ptr<UnixAddress> ptr;
 
     UnixAddress();
-    UnixAddress(const sockaddr_un &addr);
     UnixAddress(std::string &path);
 
     const sockaddr *getAddr() const override;
     sockaddr *getAddr() override;
-    const socklen_t getAddrLen() const override;
     void setAddrLen(socklen_t len);
+    const socklen_t getAddrLen() const override;
+
     std::string getPath() const;
     std::ostream &insert(std::ostream &os) const override;
 
@@ -128,15 +139,17 @@ class UnknowAddress : public Address {
 
     UnknowAddress(int family);
     UnknowAddress(const sockaddr &addr);
+
     const sockaddr *getAddr() const override;
     sockaddr *getAddr() override;
     const socklen_t getAddrLen() const override;
     std::ostream &insert(std::ostream &os) const override;
 
    private:
-    int m_family;
     sockaddr m_addr;
 };
+
+std::ostream &operator<<(std::ostream &os, const Address &addr);
 
 }  // namespace tigerkin
 
