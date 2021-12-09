@@ -84,5 +84,8 @@ target_link_libraries(test_http ${LIBS})
 add_executable(test_http_parser tests/http_parser_test.cpp)
 target_link_libraries(test_http_parser ${LIBS})
 
+add_executable(test_tcp_server tests/tcp_server_test.cpp)
+target_link_libraries(test_tcp_server ${LIBS})
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)
