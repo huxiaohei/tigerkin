@@ -24,6 +24,7 @@ set(LIB_SRC
 		src/address.cpp
 		src/socket.cpp
 		src/bytearray.cpp
+		src/tcp_server.cpp
 		src/http/http.cpp
 		src/http/http_request_parser.cpp
 		src/http/http_response_parser.cpp
