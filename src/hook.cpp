@@ -486,9 +486,6 @@ int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t
     }
     if (level == SOL_SOCKET) {
         tigerkin::FdEntity::ptr fdEntity = tigerkin::SingletonFdMgr::GetInstance()->get(sockfd);
-        if (!fdEntity || !fdEntity->isSocket() || !fdEntity->isClosed()) {
-            return setsockopt_f(sockfd, level, optname, optval, optlen);
-        }
         const timeval *v = (const timeval *)optval;
         if (optname == SO_RCVTIMEO) {
             fdEntity->setRecvTimeout(v->tv_sec * 1000 + v->tv_usec);
