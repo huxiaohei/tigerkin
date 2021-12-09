@@ -74,7 +74,6 @@ class FdManager : public std::enable_shared_from_this<FdManager> {
 };
 
 typedef tigerkin::Singleton<FdManager> SingletonFdMgr;
-typedef tigerkin::SingletonPtr<FdManager> SingletonFdMgrPtr;
 
 }  // namespace tigerkin
 
