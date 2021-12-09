@@ -55,7 +55,7 @@ Socket::ptr CreateUnixUDPSocket() {
 }
 
 Socket::Socket(int family, int type, int protocol)
-    : m_socket(-1), m_family(family), m_type(type), m_protocol(protocol), m_isConnected(false), m_localAddress(nullptr), m_remoteAddress(nullptr) {
+    : m_socket(-1), m_family(family), m_type(type), m_protocol(protocol), m_isConnected(false) {
 }
 
 Socket::~Socket() {
@@ -63,7 +63,7 @@ Socket::~Socket() {
 }
 
 int64_t Socket::getSendTimeout() const {
-    FdEntity::ptr entity = SingletonFdMgrPtr::GetInstance()->get(m_socket);
+    FdEntity::ptr entity = SingletonFdMgr::GetInstance()->get(m_socket);
     if (entity) {
         return entity->getSendTimeout();
     }
@@ -74,17 +74,11 @@ void Socket::setSendTimeout(int64_t timeout) {
     struct timeval tv {
         int(timeout / 1000), int(timeout % 1000 * 1000)
     };
-    if (!setOption(SOL_SOCKET, SO_SNDTIMEO, tv)) {
-        return;
-    }
-    FdEntity::ptr entity = SingletonFdMgrPtr::GetInstance()->get(m_socket);
-    if (entity) {
-        entity->setSendTimeout(timeout);
-    }
+    setOption(SOL_SOCKET, SO_SNDTIMEO, tv);
 }
 
 int64_t Socket::getRecvTimeout() const {
-    FdEntity::ptr entity = SingletonFdMgrPtr::GetInstance()->get(m_socket);
+    FdEntity::ptr entity = SingletonFdMgr::GetInstance()->get(m_socket);
     if (entity) {
         return entity->getRecvTimeout();
     }
@@ -95,17 +89,11 @@ void Socket::setRecvTimeout(int64_t timeout) {
     struct timeval tv {
         int(timeout / 1000), int(timeout % 1000 * 1000)
     };
-    if (!setOption(SOL_SOCKET, SO_RCVTIMEO, tv)) {
-        return;
-    }
-    FdEntity::ptr entity = SingletonFdMgrPtr::GetInstance()->get(m_socket);
-    if (entity) {
-        entity->setRecvTimeout(timeout);
-    }
+    setOption(SOL_SOCKET, SO_RCVTIMEO, tv);
 }
 
 int64_t Socket::getConnectTimeout() const {
-    FdEntity::ptr entity = SingletonFdMgrPtr::GetInstance()->get(m_socket);
+    FdEntity::ptr entity = SingletonFdMgr::GetInstance()->get(m_socket);
     if (entity) {
         return entity->getConnectTimeout();
     }
@@ -128,11 +116,13 @@ bool Socket::getOption(int level, int optname, void *optval, socklen_t *optlen) 
 bool Socket::setOption(int level, int optname, const void *optval, socklen_t optlen) {
     int rt = ::setsockopt(m_socket, level, optname, optval, optlen);
     if (rt) {
-        TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "SET OPTION WARN:\n\t"
-                                                     << "level:" << level << "\n\t"
-                                                     << "optname:" << optname << "\n\t"
-                                                     << "errno:" << errno << "\n\t"
-                                                     << "strerror:" << strerror(errno);
+        TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "SET OPTION WARN:"
+                                                     << "\n\tsocket:" << m_socket
+                                                     << "\n\tfamily:" << m_family
+                                                     << "\n\tlevel:" << level
+                                                     << "\n\toptname:" << optname
+                                                     << "\n\terrno:" << errno
+                                                     << "\n\tstrerror:" << strerror(errno);
         return false;
     }
     return true;
@@ -156,9 +146,9 @@ bool Socket::bind(const Address::ptr addr) {
         }
     }
     if (::bind(m_socket, addr->getAddr(), addr->getAddrLen())) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "BIND ERROR\n\t"
-                                                      << "errno:" << errno
-                                                      << "strerror:" << strerror(errno);
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "BIND ERROR"
+                                                      << "\n\terrno:" << errno
+                                                      << "\n\tstrerror:" << strerror(errno);
         close();
         return false;
     }
@@ -217,7 +207,7 @@ bool Socket::connect(const Address::ptr addr, uint64_t timeout) {
             return false;
         }
     }
-    FdEntity::ptr entity = SingletonFdMgrPtr::GetInstance()->get(m_socket);
+    FdEntity::ptr entity = SingletonFdMgr::GetInstance()->get(m_socket);
     if (TIGERKIN_LIKELY(entity)) {
         entity->setConnectTimeout(timeout);
     }
@@ -308,7 +298,7 @@ Address::ptr Socket::getLocalAddress() {
 }
 
 bool Socket::init(int sock) {
-    FdEntity::ptr entity = SingletonFdMgrPtr::GetInstance()->get(m_socket);
+    FdEntity::ptr entity = SingletonFdMgr::GetInstance()->get(sock);
     if (entity && entity->isSocket() && !entity->isClosed()) {
         m_socket = sock;
         m_isConnected = true;
@@ -323,7 +313,7 @@ bool Socket::init(int sock) {
 void Socket::initSocket() {
     int val = 1;
     setOption(SOL_SOCKET, SO_REUSEADDR, val);
-    if (m_type == SOCK_STREAM) {
+    if (m_type == SOCK_STREAM && m_family != AF_UNIX) {
         setOption(IPPROTO_TCP, TCP_NODELAY, val);
     }
 }
@@ -459,12 +449,17 @@ bool Socket::cancelAll() {
 }
 
 std::ostream &Socket::dump(std::ostream &os) const {
-    os << "socket info:"
-       << "\n\t"
-       << "family:" << m_family << "\n\t"
-       << "type:" << m_type << "\n\t"
-       << "protocol:" << m_protocol << "\n\t"
-       << "isConnected:" << m_isConnected << "\n\t";
+    os << "\n\tsocket:" << m_socket
+       << "\n\tfamily:" << m_family
+       << "\n\ttype:" << m_type
+       << "\n\tprotocol:" << m_protocol
+       << "\n\tisConnected:" << m_isConnected;
+    if (m_localAddress) {
+        os << "\n\tlocalAddress:" << m_localAddress->toString();
+    }
+    if (m_remoteAddress) {
+        os << "\n\tremoteAddress:" << m_remoteAddress->toString();
+    }
     return os;
 }
 
