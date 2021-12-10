@@ -117,12 +117,12 @@ void Scheduler::run() {
             task.threadId = task.co->getThreadId();
             --m_activeThreadCnt;
             if (task.co->getState() == Coroutine::State::READY) {
-                schedule(task.co, task.threadId);
+                schedule(task.co, task.threadId, true);
             }
             task.reset();
         } else if (task.cb) {
             Coroutine::ptr co(new Coroutine(task.cb));
-            schedule(co, task.threadId);
+            schedule(co, task.threadId, true);
             --m_activeThreadCnt;
             task.reset();
         } else {

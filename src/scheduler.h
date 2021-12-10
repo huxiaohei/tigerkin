@@ -36,11 +36,11 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     void stop();
 
     template <class OnceTask>
-    void schedule(OnceTask t, uint64_t threadId = 0) {
+    void schedule(OnceTask t, uint64_t threadId = 0, bool force = false) {
         bool needTickle = false;
         {
             Mutex::Lock lock(m_mutex);
-            needTickle = scheduleWithoutLock(t, threadId);
+            needTickle = scheduleWithoutLock(t, threadId, force);
         }
         if (needTickle) {
             tickle(true);
@@ -48,12 +48,12 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     }
 
     template <class OnceTaskIterator>
-    void scheduleIterator(OnceTaskIterator begin, OnceTaskIterator end) {
+    void scheduleIterator(OnceTaskIterator begin, OnceTaskIterator end, bool force = false) {
         bool needTickle = false;
         {
             MutexLock::Lock lock(m_mutex);
             while (begin != end) {
-                needTickle = scheduleWithoutLock(&*begin, 0) ? true : needTickle;
+                needTickle = scheduleWithoutLock(&*begin, 0, force) ? true : needTickle;
                 ++begin;
             }
         }
@@ -102,8 +102,8 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
 
    private:
     template <class OnceTask>
-    bool scheduleWithoutLock(OnceTask t, pid_t threadId = 0) {
-        if (m_autoStop) {
+    bool scheduleWithoutLock(OnceTask t, pid_t threadId = 0, bool force = false) {
+        if (m_autoStop && !force) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "Can not add task while the scheduler is stopping";
             return false;
         }
