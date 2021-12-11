@@ -27,7 +27,7 @@ class Timer : public std::enable_shared_from_this<Timer> {
 
     bool cancel();
     bool refresh();
-    bool reset(uint64_t ms, std::function<void()> cb = nullptr);
+    bool reset(uint64_t ms);
 
    private:
     Timer(uint64_t next);

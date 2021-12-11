@@ -69,25 +69,21 @@ bool Timer::refresh() {
     return true;
 }
 
-bool Timer::reset(uint64_t ms, std::function<void()> cb) {
+bool Timer::reset(uint64_t ms) {
+    if (ms == m_ms) {
+        return true;
+    }
     TimerManager::RWMutex::WriteLock lock(m_mgr->m_mutex);
     if (!m_cb) {
-        cb = nullptr;
         return false;
     }
-    if (cb) {
-        m_cb = nullptr;
-        m_cb = cb;
-    }
-    m_ms = ms;
-    m_next = m_ms + GetNowMillisecond();
     std::set<Timer::ptr>::iterator it = m_mgr->m_timers.find(shared_from_this());
     if (it == m_mgr->m_timers.end()) {
-        m_cb = nullptr;
         return false;
     }
     m_mgr->m_timers.erase(it);
-    m_next = GetNowMillisecond() + m_ms;
+    m_ms = ms;
+    m_next = m_ms + GetNowMillisecond();
     it = m_mgr->m_timers.insert(shared_from_this()).first;
     if (it == m_mgr->m_timers.begin()) {
         m_mgr->onTimerRefresh();
