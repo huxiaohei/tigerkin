@@ -1,9 +1,9 @@
 /*****************************************************************
-* Description coroutine
-* Email huxiaoheigame@gmail.com
-* Created on 2021/09/19
-* Copyright (c) 2021 虎小黑
-****************************************************************/
+ * Description coroutine
+ * Email huxiaoheigame@gmail.com
+ * Created on 2021/09/19
+ * Copyright (c) 2021 虎小黑
+ ****************************************************************/
 
 #include "coroutine.h"
 
@@ -22,7 +22,9 @@ static std::atomic<uint64_t> s_co_cnt{0};
 static std::atomic<uint64_t> s_stack_id{0};
 
 static thread_local Coroutine *t_cur_co = nullptr;
+static thread_local Coroutine *t_back_co = nullptr;
 static thread_local Coroutine::ptr t_main_co = nullptr;
+static thread_local Coroutine::ptr t_caller_co = nullptr;
 static thread_local std::map<uint64_t, std::stack<Coroutine *> *> t_map_co_stack;
 
 static ConfigVar<uint32_t>::ptr g_co_stack_size = Config::Lookup<uint32_t>("tigerkin.coroutine.stackSize", 1024 * 1024, "StackSize");
@@ -116,22 +118,24 @@ void Coroutine::resume() {
             coStack->push(this);
         }
         if (coStack->top()->m_state == State::EXECING) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "The coroutine is already resumed \n"
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "THE COROUTINE IS ALREADY RESUMED"
                                                           << BacktraceToString(10);
             return;
         }
         if (coStack->top()->m_state == State::TERMINAL || coStack->top()->m_state == State::EXCEPT) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "The coroutine is already exited \n"
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "THE COROUTINE IS ALREADY EXITED\n"
                                                           << BacktraceToString(10);
             return;
         }
         m_state = State::EXECING;
-        SetThis(this);
         int swapFail = 0;
         if (t_main_co->m_state == State::EXECING) {
             t_main_co->m_state = State::YIELD;
+            SetThis(this);
             swapFail = swapcontext(&t_main_co->m_ctx, &m_ctx);
         } else {
+            t_cur_co->m_state = State::YIELD;
+            SetThis(this);
             swapFail = swapcontext(m_ctx.uc_link, &m_ctx);
         }
         if (swapFail) {
@@ -158,8 +162,8 @@ void Coroutine::resume() {
         coStack->push(this);
         m_stackId = ++s_stack_id;
         t_map_co_stack.insert({m_stackId, coStack});
-        SetThis(this);
         t_main_co->m_state = State::YIELD;
+        SetThis(this);
         m_state = State::EXECING;
         if (swapcontext(&t_main_co->m_ctx, &m_ctx)) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "SWAP CONTEXT ERROR \n"
@@ -170,6 +174,32 @@ void Coroutine::resume() {
             t_main_co->m_state = State::EXECING;
             setcontext(&t_main_co->m_ctx);
         }
+    }
+}
+
+void Coroutine::resumeWithNewStack() {
+    if (m_stackId || t_main_co.get() == this) {
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "THE COROUTINE CAN NOT CALL BACK RESUME";
+        return;
+    }
+    m_ctx.uc_link = &t_main_co->m_ctx;
+    std::stack<Coroutine *> *coStack = new std::stack<Coroutine *>;
+    m_threadId = GetThreadId();
+    coStack->push(this);
+    m_stackId = ++s_stack_id;
+    t_map_co_stack.insert({m_stackId, coStack});
+    t_cur_co->m_state = State::YIELD;
+    t_back_co = t_cur_co;
+    SetThis(this);
+    m_state = State::EXECING;
+    if (swapcontext(&t_back_co->m_ctx, &m_ctx)) {
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "SWAP CONTEXT ERROR \n"
+                                                      << BacktraceToString(10);
+        t_map_co_stack.erase(m_stackId);
+        delete coStack;
+        SetThis(t_back_co);
+        t_back_co->m_state = State::EXECING;
+        setcontext(&t_back_co->m_ctx);
     }
 }
 
@@ -184,11 +214,20 @@ void Coroutine::yield() {
                                                       << BacktraceToString(10);
         return;
     }
-    SetThis(t_main_co.get());
-    m_state = m_state == State::EXECING ? State::YIELD : m_state;
-    t_main_co->m_state = State::EXECING;
-    if (swapcontext(&m_ctx, &t_main_co->m_ctx)) {
-        TIGERKIN_ASSERT2(false, "SWAP CONTEXT ERROR");
+    if (t_caller_co && t_caller_co->m_state == State::YIELD) {
+        SetThis(t_caller_co.get());
+        m_state = m_state == State::EXECING ? State::YIELD : m_state;
+        t_caller_co->m_state = State::EXECING;
+        if (swapcontext(&m_ctx, &t_caller_co->m_ctx)) {
+            TIGERKIN_ASSERT2(false, "SWAP CONTEXT ERROR");
+        }
+    } else {
+        SetThis(t_main_co.get());
+        m_state = m_state == State::EXECING ? State::YIELD : m_state;
+        t_main_co->m_state = State::EXECING;
+        if (swapcontext(&m_ctx, &t_main_co->m_ctx)) {
+            TIGERKIN_ASSERT2(false, "SWAP CONTEXT ERROR");
+        }
     }
 }
 
@@ -240,6 +279,14 @@ size_t Coroutine::CoStackCnt() {
     return t_map_co_stack.size();
 }
 
+bool Coroutine::CurCoIsMainCo() {
+    return t_cur_co == t_main_co.get();
+}
+
+void Coroutine::SetCallerCo(Coroutine::ptr co) {
+    t_caller_co = co;
+}
+
 void Coroutine::MainFunc() {
     Coroutine::ptr curCo = GetThis();
     try {
@@ -261,16 +308,18 @@ void Coroutine::MainFunc() {
     if (t_map_co_stack.at(curCo->m_stackId)->empty()) {
         delete t_map_co_stack.at(curCo->m_stackId);
         t_map_co_stack.erase(curCo->m_stackId);
-        SetThis(t_main_co.get());
+        if (t_caller_co && t_caller_co->m_state == State::YIELD) {
+            SetThis(t_caller_co.get());
+        } else {
+            SetThis(t_main_co.get());
+        }
     } else {
         SetThis(t_map_co_stack.at(curCo->m_stackId)->top());
     }
     curCo.reset();
     t_cur_co->m_state = State::EXECING;
-    if (setcontext(&t_cur_co->m_ctx)) {
-        std::cout << "error" << std::endl;
-    }
-    std::cout << "error" << std::endl;
+    setcontext(&t_cur_co->m_ctx);
+    TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "COROUTINE ERROR";
 }
 
 }  // namespace tigerkin

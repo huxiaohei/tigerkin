@@ -77,10 +77,10 @@ void Thread::join() {
     if (m_thread) {
         int rt = pthread_join(m_thread, nullptr);
         if (rt) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "pthread_join fail\n"
-                                                          << "\t rt:" << rt << "\n"
-                                                          << "\t name:" << m_name;
-            throw std::logic_error("pthread_join error");
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "PTHREAD JOIN FAIL"
+                                                          << "\n\t rt:" << rt
+                                                          << "\n\t name:" << m_name;
+            throw std::logic_error("PTHREAD JOIN ERROR");
         }
     }
     m_thread = 0;

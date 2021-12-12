@@ -1,9 +1,9 @@
 /*****************************************************************
-* Description 调度器
-* Email huxiaoheigame@gmail.com
-* Created on 2021/09/20
-* Copyright (c) 2021 虎小黑
-****************************************************************/
+ * Description 调度器
+ * Email huxiaoheigame@gmail.com
+ * Created on 2021/09/20
+ * Copyright (c) 2021 虎小黑
+ ****************************************************************/
 
 #ifndef __SCHEDULE_H__
 #define __SCHEDULE_H__
@@ -43,7 +43,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
             needTickle = scheduleWithoutLock(t, threadId, force);
         }
         if (needTickle) {
-            tickle(true);
+            tickle();
         }
     }
 
@@ -58,7 +58,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
             }
         }
         if (needTickle) {
-            tickle(true);
+            tickle();
         }
     }
 
@@ -104,10 +104,10 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     template <class OnceTask>
     bool scheduleWithoutLock(OnceTask t, pid_t threadId = 0, bool force = false) {
         if (m_autoStop && !force) {
-            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "Can not add task while the scheduler is stopping";
+            TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "CAN NOT ADD TASK WHILE THE SCHEDULER IS STOPPING\n\t"
+                                                         << BacktraceToString();
             return false;
         }
-        bool needTickle = m_taskPools.empty();
         Task task(t, threadId);
         if (task.cb || task.co) {
             m_taskPools.push_back(task);
@@ -115,10 +115,8 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
         if (task.co && task.co->getThreadId() > 0) {
             task.threadId = task.co->getThreadId();
         }
-        if (!needTickle && m_taskPools.size() > m_threadCnt * getSchedulerTickleCaller()) {
-            needTickle = true;
-        }
-        return needTickle;
+        std::cout << "size:" << m_taskPools.size() << std::endl;
+        return !m_taskPools.empty() && m_idleThreadCnt > 0;
     }
 
    private:
@@ -129,11 +127,13 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     bool m_autoStop = false;
     Mutex m_mutex;
     Thread::ThreadCond m_cond = PTHREAD_COND_INITIALIZER;
+    Thread::ThreadCond m_callerCond = PTHREAD_COND_INITIALIZER;
     Thread::ThreadMutex m_threadMutex = PTHREAD_MUTEX_INITIALIZER;
     std::vector<Thread::ptr> m_threads;
     std::string m_name;
 
    protected:
+    bool m_userCaller;
     pid_t m_callerThreadId = 0;
     Coroutine::ptr m_callerCo = nullptr;
     size_t m_threadCnt = 0;
@@ -142,7 +142,8 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     void setThis();
     void run();
     virtual bool stopping();
-    virtual void tickle(bool tickleCaller = false, bool force = false);
+    virtual bool canEarlyClosure();
+    virtual void tickle();
     virtual void idle();
 };
 

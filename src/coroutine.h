@@ -1,9 +1,9 @@
 /*****************************************************************
-* Description coroutine
-* Email huxiaoheigame@gmail.com
-* Created on 2021/09/19
-* Copyright (c) 2021 虎小黑
-****************************************************************/
+ * Description coroutine
+ * Email huxiaoheigame@gmail.com
+ * Created on 2021/09/19
+ * Copyright (c) 2021 虎小黑
+ ****************************************************************/
 
 #ifndef __TIGERKIN_COROUTINE_H__
 #define __TIGERKIN_COROUTINE_H__
@@ -41,6 +41,10 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
      */
     void resume();
     /**
+     * Use a new stack to exec the resume
+     */
+    void resumeWithNewStack();
+    /**
      * From the current coroutine switch to the current thread's main coroutine
      */
     void yield();
@@ -60,7 +64,7 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
      * Get the coroutine state
      */
     State getState() const { return m_state; }
-    
+
    public:
     static void SetThis(Coroutine *co);
     static Coroutine::ptr GetThis();
@@ -69,8 +73,9 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
     static void Resume(uint64_t stackId);
     static size_t CoCnt();
     static size_t CoStackCnt();
+    static bool CurCoIsMainCo();
+    static void SetCallerCo(Coroutine::ptr co);
     static void MainFunc();
-    
 
    private:
     Coroutine();
