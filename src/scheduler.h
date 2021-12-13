@@ -115,7 +115,6 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
         if (task.co && task.co->getThreadId() > 0) {
             task.threadId = task.co->getThreadId();
         }
-        std::cout << "size:" << m_taskPools.size() << std::endl;
         return !m_taskPools.empty() && m_idleThreadCnt > 0;
     }
 
