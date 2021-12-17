@@ -54,6 +54,7 @@ void Scheduler::start() {
     for (size_t i = 0; i < m_threadCnt; ++i) {
         m_threads[i].reset(new Thread(std::bind(&Scheduler::run, this), m_name + std::to_string(i + 1)));
         m_threadIds.push_back(m_threads[i]->getId());
+        ++m_activeThreadCnt;
     }
     lock.unlock();
     if (m_userCaller && m_callerCo->getState() == Coroutine::State::INIT) {
@@ -143,7 +144,6 @@ void Scheduler::run() {
                 Mutex::Lock lock(m_mutex);
                 if (m_callerThreadId == GetThreadId()) {
                     if (stopping()) {
-                        std::cout << "main exit:" << GetThreadId() << std::endl;
                         Coroutine::DelCallerCo();
                         idleCo->resume();
                         break;
@@ -154,8 +154,9 @@ void Scheduler::run() {
                         --m_idleThreadCnt;
                     }
                 } else if (canEarlyClosure()) {
-                    std::cout << "thread exit:" << GetThreadId() << std::endl;
-                    --m_threadCnt;
+                    --m_activeThreadCnt;
+                    idleCo->resume();
+                    tickle();
                     break;
                 } else {
                     if (m_autoStop) {
@@ -177,7 +178,7 @@ void Scheduler::setThis() {
 }
 
 bool Scheduler::stopping() {
-    return m_autoStop && m_stopping && m_taskPools.empty() && m_threadCnt == 0;
+    return m_autoStop && m_stopping && m_taskPools.empty() && m_activeThreadCnt == 0;
 }
 
 bool Scheduler::canEarlyClosure() {
@@ -190,6 +191,9 @@ void Scheduler::tickle() {
 
 void Scheduler::idle() {
     while (!stopping()) {
+        if (GetThreadId() != m_callerThreadId && canEarlyClosure()) {
+            break;
+        }
         Thread::CondWait(m_cond, m_threadMutex);
         Coroutine::Yield();
     }

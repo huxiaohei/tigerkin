@@ -7,9 +7,9 @@
 
 #include "../src/scheduler.h"
 
+#include <functional>
 #include <iostream>
 #include <string>
-#include <functional>
 
 #include "../src/hook.h"
 #include "../src/macro.h"
@@ -17,9 +17,7 @@
 #include "../src/util.h"
 
 void co_func_a() {
-    // TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in func a start";
-    sleep_f(0.01);
-    // TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in func a end";
+    usleep_f(1);
 }
 
 void stop_scheduler(tigerkin::Scheduler::ptr sc) {
@@ -35,7 +33,7 @@ void test_scheduler_use_caller() {
             sc->schedule(co);
         } else {
             sc->schedule([]() -> void {
-                TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in callback";
+                usleep_f(1);
             });
         }
     }
@@ -54,7 +52,7 @@ void test_scheduler() {
             sc->schedule(co);
         } else {
             sc->schedule([]() -> void {
-                TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in callback";
+                usleep_f(1);
             });
         }
     }
