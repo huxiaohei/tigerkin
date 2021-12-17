@@ -137,7 +137,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
     Coroutine::ptr m_callerCo = nullptr;
     std::atomic<size_t> m_threadCnt = {0};
     std::list<Task> m_taskPools;
-    bool hasIdelThreads() { return m_idleThreadCnt > 0; };
+    bool hasIdleThreads() { return m_idleThreadCnt > 0; };
     void setThis();
     void run();
     virtual bool stopping();
