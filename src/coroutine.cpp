@@ -287,6 +287,10 @@ void Coroutine::SetCallerCo(Coroutine::ptr co) {
     t_caller_co = co;
 }
 
+void Coroutine::DelCallerCo() {
+    t_caller_co = nullptr;
+}
+
 void Coroutine::MainFunc() {
     Coroutine::ptr curCo = GetThis();
     try {

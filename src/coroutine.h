@@ -75,6 +75,7 @@ class Coroutine : public std::enable_shared_from_this<Coroutine> {
     static size_t CoStackCnt();
     static bool CurCoIsMainCo();
     static void SetCallerCo(Coroutine::ptr co);
+    static void DelCallerCo();
     static void MainFunc();
 
    private:
