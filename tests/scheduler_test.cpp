@@ -17,9 +17,9 @@
 #include "../src/util.h"
 
 void co_func_a() {
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in func a start";
+    // TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in func a start";
     sleep_f(0.01);
-    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in func a end";
+    // TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "in func a end";
 }
 
 void stop_scheduler(tigerkin::Scheduler::ptr sc) {
@@ -66,6 +66,6 @@ int main(int argc, char **argv) {
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     tigerkin::Thread::SetName("Scheduler Test");
     test_scheduler_use_caller();
-    // test_scheduler();
+    test_scheduler();
     return 0;
 }
