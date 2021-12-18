@@ -21,10 +21,13 @@ bool Timer::Comparator::operator()(const Timer::ptr &lth, const Timer::ptr &rth)
     if (!lth) {
         return false;
     }
-    if (lth->m_next <= rth->m_next) {
+    if (lth->m_next < rth->m_next) {
         return true;
     }
-    return false;
+    if (rth->m_next < lth->m_next) {
+        return false;
+    }
+    return lth.get() < rth.get();
 }
 
 Timer::Timer(uint64_t ms, std::function<void()> cb, TimerManager *mgr, bool recurring = false)
@@ -77,7 +80,8 @@ bool Timer::reset(uint64_t ms) {
     if (!m_cb) {
         return false;
     }
-    std::set<Timer::ptr>::iterator it = m_mgr->m_timers.find(shared_from_this());
+    Timer::ptr a = shared_from_this();
+    std::set<Timer::ptr>::iterator it = m_mgr->m_timers.find(a);
     if (it == m_mgr->m_timers.end()) {
         return false;
     }
