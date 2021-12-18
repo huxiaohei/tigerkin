@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 #include "fdmanager.h"
-#include "iomamager.h"
+#include "iomanager.h"
 #include "macro.h"
 
 namespace tigerkin {
@@ -158,9 +158,10 @@ unsigned int sleep(unsigned int seconds) {
     }
     tigerkin::IOManager *iom = tigerkin::IOManager::GetThis();
     tigerkin::Coroutine::ptr co = tigerkin::Coroutine::GetThis();
+    pid_t threadId = tigerkin::GetThreadId();
     iom->addTimer(
-        seconds * 1000, [co, iom]() {
-            iom->schedule(co);
+        seconds * 1000, [co, iom, threadId]() {
+            iom->schedule(co, threadId);
         },
         false);
     tigerkin::Coroutine::Yield();
@@ -173,9 +174,10 @@ int usleep(useconds_t usec) {
     }
     tigerkin::IOManager *iom = tigerkin::IOManager::GetThis();
     tigerkin::Coroutine::ptr co = tigerkin::Coroutine::GetThis();
+    pid_t threadId = tigerkin::GetThreadId();
     iom->addTimer(
-        usec / 1000, [co, iom]() {
-            iom->schedule(co);
+        usec / 1000, [co, iom, threadId]() {
+            iom->schedule(co, threadId);
         },
         false);
     tigerkin::Coroutine::Yield();
@@ -189,9 +191,10 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
     int ms = rqtp->tv_sec * 1000 + rqtp->tv_nsec / 1000000;
     tigerkin::IOManager *iom = tigerkin::IOManager::GetThis();
     tigerkin::Coroutine::ptr co = tigerkin::Coroutine::GetThis();
+    pid_t threadId = tigerkin::GetThreadId();
     iom->addTimer(
-        ms, [co, iom]() {
-            iom->schedule(co);
+        ms, [co, iom, threadId]() {
+            iom->schedule(co, threadId);
         },
         false);
     tigerkin::Coroutine::Yield();

@@ -64,7 +64,8 @@ class IOManager : public Scheduler, public TimerManager {
 
    protected:
     bool stopping() override;
-    void tickle(bool tickleCaller = false, bool force = false) override;
+    bool canEarlyClosure() override;
+    void tickle() override;
     void idle() override;
     void onTimerRefresh() override;
 

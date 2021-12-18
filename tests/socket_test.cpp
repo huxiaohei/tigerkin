@@ -8,7 +8,7 @@
 #include "../src/socket.h"
 
 #include "../src/hook.h"
-#include "../src/iomamager.h"
+#include "../src/iomanager.h"
 #include "../src/macro.h"
 
 void test_socket_send() {
@@ -47,8 +47,10 @@ void test_socket_send() {
 int main() {
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket_test start";
-    tigerkin::IOManager iom;
-    iom.schedule(&test_socket_send);
+    tigerkin::IOManager::ptr iom(new tigerkin::IOManager(1, false));
+    iom->start();
+    iom->schedule(&test_socket_send);
+    iom->stop();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket_test end";
     return 0;
 }

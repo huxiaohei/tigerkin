@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "address.h"
-#include "iomamager.h"
+#include "iomanager.h"
 #include "socket.h"
 
 namespace tigerkin {

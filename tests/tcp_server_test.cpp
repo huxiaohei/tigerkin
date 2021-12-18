@@ -9,7 +9,7 @@
 
 #include "../src/address.h"
 #include "../src/hook.h"
-#include "../src/iomamager.h"
+#include "../src/iomanager.h"
 
 void run() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "RUN START";

@@ -15,7 +15,7 @@
 #include <iostream>
 
 #include "../src/hook.h"
-#include "../src/iomamager.h"
+#include "../src/iomanager.h"
 #include "../src/macro.h"
 #include "../src/scheduler.h"
 #include "../src/thread.h"
@@ -25,44 +25,43 @@ int sock_b = 0;
 
 void co_func_a() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a start";
-    sock_a = socket(AF_INET, SOCK_STREAM, 0);
-    fcntl(sock_a, F_SETFL, O_NONBLOCK);
+    sock_a = socket_f(AF_INET, SOCK_STREAM, 0);
+    fcntl_f(sock_a, F_SETFL, O_NONBLOCK);
     sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(80);
     inet_pton(AF_INET, "14.215.177.38", &addr.sin_addr.s_addr);
-    if (!connect(sock_a, (const sockaddr *)&addr, sizeof(addr))) {
+    if (!connect_f(sock_a, (const sockaddr *)&addr, sizeof(addr))) {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "connect fail";
     } else if (errno == EINPROGRESS) {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "add event";
         tigerkin::IOManager::GetThis()->addEvent(sock_a, tigerkin::IOManager::Event::WRITE, []() {
             TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect a";
-            close(sock_a);
+            close_f(sock_a);
         });
     } else {
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
     }
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func a end";
-    sleep_f(4);
 }
 
 void co_func_b() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func b start";
-    sock_b = socket(AF_INET, SOCK_STREAM, 0);
-    fcntl(sock_b, F_SETFL, O_NONBLOCK);
+    sock_b = socket_f(AF_INET, SOCK_STREAM, 0);
+    fcntl_f(sock_b, F_SETFL, O_NONBLOCK);
     sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(80);
     inet_pton(AF_INET, "121.14.77.221", &addr.sin_addr.s_addr);
-    if (!connect(sock_b, (const sockaddr *)&addr, sizeof(addr))) {
+    if (!connect_f(sock_b, (const sockaddr *)&addr, sizeof(addr))) {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "connect fail";
     } else if (errno == EINPROGRESS) {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "add event";
         tigerkin::IOManager::GetThis()->addEvent(sock_b, tigerkin::IOManager::Event::WRITE, []() {
             TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(TEST)) << "write connect b";
-            close(sock_b);
+            close_f(sock_b);
         });
     } else {
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "ERRNO:" << strerror(errno);
@@ -70,52 +69,55 @@ void co_func_b() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "co func b end";
 }
 
-void test_simple_test() {
-    tigerkin::IOManager iom(1, false, "IOManager");
-    std::cout << "test_simple_test" << std::endl;
-    iom.schedule(&co_func_a);
-    iom.schedule(&co_func_b);
+void stop_iom(tigerkin::IOManager::ptr iom) {
+    TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "IOM STOP";
+    iom->stop();
+}
+
+void test_iom() {
+    tigerkin::IOManager::ptr iom(new tigerkin::IOManager(2, true, "IOManager"));
+    iom->schedule(&co_func_a);
+    iom->schedule(&co_func_b);
+    iom->schedule(std::bind(&stop_iom, iom), tigerkin::GetThreadId());
+    iom->start();
 }
 
 void test_timer() {
     tigerkin::IOManager iom(2, false, "TimerIOManager");
+    iom.start();
     tigerkin::Timer::ptr timerA = iom.addTimer(
-        5000, []() {
+        2000, []() {
             TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer a";
         },
         true);
     tigerkin::Timer::ptr timerB = iom.addTimer(
-        5000, []() {
+        3000, []() {
             TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer b";
         },
         false);
-    sleep_f(2);
-    timerA->reset(2000, []() {
-        TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "I am in timer a reset";
-    });
-    sleep_f(5);
-    timerA->cancel();
-    sleep_f(1);
+    timerB->reset(1000);
+    sleep_f(4);
+    iom.stop();
 }
 
 void test_timer_insert() {
     tigerkin::IOManager iom(2, false, "IOManager");
-    iom.addTimer(4000, []() {
+    iom.start();
+    iom.addTimer(2000, []() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer a";
     });
-    iom.addTimer(2000, []() {
+    iom.addTimer(1000, []() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "timer b";
     });
     sleep_f(5);
+    iom.stop();
 }
 
 int main(int argc, char **argv) {
-    std::cout << "iomanager_test start" << std::endl;
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     tigerkin::Thread::SetName("iomanager test");
-    test_simple_test();
+    test_iom();
     test_timer();
     test_timer_insert();
-    std::cout << "iomanager_test end" << std::endl;
     return 0;
 }

@@ -12,12 +12,10 @@
 #include <unistd.h>
 
 #include "hook.h"
-#include "iomamager.h"
+#include "iomanager.h"
 #include "macro.h"
 
 namespace tigerkin {
-
-static ConfigVar<uint8_t>::ptr g_iomanager_tickle_caller = Config::Lookup<uint8_t>("tigerkin.iomanager.tickleCaller", 3, "TickleCaller");
 
 IOManager::FdContext::EventContext &IOManager::FdContext::getEventContext(const IOManager::Event event) {
     if (event == IOManager::Event::READ) {
@@ -39,9 +37,9 @@ void IOManager::FdContext::triggerEvent(const IOManager::Event event) {
     events = (Event)(events & ~event);
     EventContext &ctx = getEventContext(event);
     if (ctx.cb) {
-        ctx.scheduler->schedule(&ctx.cb, ctx.threadId);
+        ctx.scheduler->schedule(&ctx.cb, ctx.threadId, true);
     } else {
-        ctx.scheduler->schedule(&ctx.co, ctx.threadId);
+        ctx.scheduler->schedule(&ctx.co, ctx.threadId, true);
     }
     ctx.scheduler = nullptr;
 }
@@ -61,12 +59,10 @@ IOManager::IOManager(size_t threadCnt, bool useCaller, const std::string &name)
     rt = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_tickleFds[0], &event);
     TIGERKIN_ASSERT(!rt);
     fdContextsResize(64);
-    start();
 }
 
 IOManager::~IOManager() {
     cancelAllTimers();
-    stop();
     close(m_epfd);
     close(m_tickleFds[0]);
     close(m_tickleFds[1]);
@@ -233,21 +229,19 @@ bool IOManager::cancelAllEvent(FdId fd) {
     return true;
 }
 
-void IOManager::tickle(bool tickleCaller, bool force) {
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "TICKER";
-    if (hasIdelThreads()) {
+void IOManager::tickle() {
+    if (hasIdleThreads()) {
         int rt = write(m_tickleFds[1], "T", 1);
         TIGERKIN_ASSERT(rt == 1);
-    }
-    if (tickleCaller && m_callerThreadId == GetThreadId() && m_callerCo->getState() == Coroutine::State::YIELD) {
-        if (force || m_taskPools.size() >= g_iomanager_tickle_caller->getValue() * m_threadCnt) {
-            Coroutine::Resume(m_callerCo->getStackId());
-        }
     }
 }
 
 bool IOManager::stopping() {
     return Scheduler::stopping() && m_pendingEventCount == 0;
+}
+
+bool IOManager::canEarlyClosure() {
+    return Scheduler::canEarlyClosure() && m_pendingEventCount == 0;
 }
 
 void IOManager::idle() {
@@ -259,7 +253,9 @@ void IOManager::idle() {
     int rt = 0;
     std::vector<std::function<void()>> cbs;
     while (!stopping()) {
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE START";
+        if (GetThreadId() != m_callerThreadId && canEarlyClosure()) {
+            break;
+        }
         rt = 0;
         do {
             static const int EPOLL_MAX_TIMEOUT = 5000;
@@ -318,7 +314,6 @@ void IOManager::idle() {
                 --m_pendingEventCount;
             }
         }
-        TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE END";
         Coroutine::Yield();
     }
 }

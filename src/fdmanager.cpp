@@ -27,7 +27,7 @@ FdEntity::~FdEntity() {
 }
 
 uint64_t FdEntity::getConnectTimeout() const {
-    if (m_connectTimeout < 0) {
+    if (m_connectTimeout <= 0) {
         return g_tcp_connect_timeout->getValue();
     }
     return m_connectTimeout;

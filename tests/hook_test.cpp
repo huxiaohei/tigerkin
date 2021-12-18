@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "../src/iomamager.h"
+#include "../src/iomanager.h"
 #include "../src/macro.h"
 
 void test_block_sleep() {
