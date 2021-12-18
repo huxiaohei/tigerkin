@@ -104,7 +104,7 @@ void TcpServer::startAccept(Socket::ptr sock) {
 }
 
 void TcpServer::handleClient(Socket::ptr client) {
-    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "handle client";
+    TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "handle client:\n\t" << client->toString();
 }
 
 }  // namespace tigerkin
