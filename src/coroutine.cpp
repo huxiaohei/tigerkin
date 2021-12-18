@@ -179,7 +179,7 @@ void Coroutine::resume() {
 
 void Coroutine::resumeWithNewStack() {
     if (m_stackId || t_main_co.get() == this) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "THE COROUTINE CAN NOT CALL BACK RESUME";
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "THIS COROUTINE CAN NOT BE CALLED ON A NEW STACK";
         return;
     }
     m_ctx.uc_link = &t_main_co->m_ctx;
@@ -205,12 +205,12 @@ void Coroutine::resumeWithNewStack() {
 
 void Coroutine::yield() {
     if (t_map_co_stack.find(m_stackId) == t_map_co_stack.end()) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "Can not find coroutine stack by m_stackId \n"
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "CAN NOT FIND THE COROUTINE STACK BY M_STACKID\n"
                                                       << BacktraceToString(10);
         return;
     }
     if (this != t_map_co_stack.at(m_stackId)->top()) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "Only the coroutine from stack top can yield \n"
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "ONLY THE COROUTINE FROM STACK TOP CAN YIELD\n"
                                                       << BacktraceToString(10);
         return;
     }

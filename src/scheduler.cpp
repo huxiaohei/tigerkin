@@ -15,15 +15,15 @@ static thread_local Scheduler *t_scheduler = nullptr;
 
 Scheduler::Scheduler(size_t threads, bool useCaller, const std::string &name)
     : m_name(name), m_userCaller(useCaller) {
-    TIGERKIN_ASSERT2(threads > 0, "One scheduler must have at least one thread");
+    TIGERKIN_ASSERT2(threads > 0, "ONE SCHEDULER MUSH HAVE AT LEAST ONE THREAD");
+    m_callerThreadId = GetThreadId();
     if (useCaller) {
         --threads;
-        TIGERKIN_ASSERT2(GetThis() == nullptr, "A thread can only have one scheduler");
+        TIGERKIN_ASSERT2(GetThis() == nullptr, "A THREAD CAN ONLY HAVE ONE SCHEDULER");
         Thread::SetName(name + "0");
         t_scheduler = this;
         m_callerCo.reset(new Coroutine(std::bind(&Scheduler::run, this)));
         Coroutine::SetCallerCo(m_callerCo);
-        m_callerThreadId = GetThreadId();
         m_threadIds.push_back(m_callerThreadId);
     }
     m_threadCnt = threads;
@@ -43,7 +43,7 @@ Scheduler *Scheduler::GetThis() {
 void Scheduler::start() {
     Mutex::Lock lock(m_mutex);
     if (!m_stopping) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "The scheduler can not restart while it is stopping"
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "THE SCHEDULER CAN NOT RESTART WHILE IT IS RUNNING"
                                                       << BacktraceToString();
         return;
     }
@@ -63,6 +63,10 @@ void Scheduler::start() {
 }
 
 void Scheduler::stop() {
+    if (m_callerThreadId != GetThreadId()) {
+        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "STOP IS ONLY CALLED IN THE THREAD WHERE THE CALL STARTED";
+        return;
+    }
     m_autoStop = true;
     if (m_userCaller && m_threadCnt == 0 && (m_callerCo->getState() == Coroutine::TERMINAL || m_callerCo->getState() == Coroutine::INIT)) {
         TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "STOP";
@@ -133,7 +137,6 @@ void Scheduler::run() {
             }
             if (idleCo->getState() == Coroutine::State::TERMINAL ||
                 idleCo->getState() == Coroutine::State::EXCEPT) {
-                TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "IDLE COROUTINE TERMINAL OR EXCEPT";
                 break;
             }
 
