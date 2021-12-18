@@ -11,8 +11,8 @@
 #include "../src/iomanager.h"
 #include "../src/macro.h"
 
-void test_socket_send() {
-    tigerkin::IpAddress::ptr address = tigerkin::IpAddress::LookupAnyIpAddress("www.baidu.com:80");
+void test_socket_send(std::string addr) {
+    tigerkin::IpAddress::ptr address = tigerkin::IpAddress::LookupAnyIpAddress(addr);
     tigerkin::Socket::ptr sock = tigerkin::Socket::CreateTCPSocket();
     if (!sock->connect(address)) {
         TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(TEST)) << "socket connect error\n\t"
@@ -49,7 +49,8 @@ int main() {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket_test start";
     tigerkin::IOManager::ptr iom(new tigerkin::IOManager(1, false));
     iom->start();
-    iom->schedule(&test_socket_send);
+    iom->schedule(std::bind(&test_socket_send, "www.baidu.com:80"));
+    iom->schedule(std::bind(&test_socket_send, "www.baidu.com:80"));
     iom->stop();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "socket_test end";
     return 0;

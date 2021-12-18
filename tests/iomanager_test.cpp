@@ -96,7 +96,8 @@ void test_timer() {
         },
         false);
     timerB->reset(1000);
-    sleep_f(4);
+    sleep_f(5);
+    timerA->cancel();
     iom.stop();
 }
 

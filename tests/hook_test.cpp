@@ -17,7 +17,8 @@
 #include "../src/macro.h"
 
 void test_block_sleep() {
-    tigerkin::IOManager iom(1, true, "test_block_sleep");
+    tigerkin::IOManager iom(1, false, "test_block_sleep");
+    iom.start();
     iom.schedule([]() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "block sleep 2 second start";
         sleep_f(2);
@@ -28,10 +29,12 @@ void test_block_sleep() {
         sleep_f(3);
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "block sleep 3 second end";
     });
+    iom.stop();
 }
 
 void test_nonblock_sleep() {
     tigerkin::IOManager iom(1, false, "test_nonblock_sleep");
+    iom.start();
     iom.schedule([]() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "nonblock sleep 2 second start";
         sleep(2);
@@ -43,6 +46,7 @@ void test_nonblock_sleep() {
         TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "nonblock sleep 3 second end";
     });
     sleep_f(6);
+    iom.stop();
 }
 
 void test_socket() {
@@ -82,13 +86,19 @@ void test_socket() {
                                                 << buff;
 }
 
+void exitIOM(tigerkin::IOManager *iom) {
+    iom->stop();
+}
+
 int main(int argc, char **argv) {
     tigerkin::SingletonLoggerMgr::GetInstance()->addLoggers("/home/liuhu/tigerkin/conf/log.yml", "logs");
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "hook test start";
     test_block_sleep();
     test_nonblock_sleep();
-    tigerkin::IOManager iom(3, false, "Hook");
+    tigerkin::IOManager iom(3, true, "Hook");
     iom.schedule(&test_socket);
-    sleep_f(3);
+    iom.schedule(std::bind(&exitIOM, &iom), tigerkin::GetThreadId());
+    iom.start();
+    iom.stop();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "hook test end";
 }

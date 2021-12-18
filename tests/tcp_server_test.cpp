@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "tcp_server_test start";
     tigerkin::IOManager iom(2, true, "TCP Server");
     iom.schedule(&run);
+    iom.start();
     TIGERKIN_LOG_DEBUG(TIGERKIN_LOG_NAME(TEST)) << "tcp_server_test end";
-    sleep_f(1000);
     return 0;
 }
