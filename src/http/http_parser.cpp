@@ -138,7 +138,7 @@ void on_response_http_version(void *data, const char *at, size_t length) {
         v = 0x10;
     } else {
         TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "INVALID HTTP RESPONSE VERSION:\n\t"
-            "version:" << std::string(at, length);
+                                                     << "version:" << std::string(at, length);
         parser->setError(HttpParserError::INVALID_VERSION_ERROR);
         return;
     }

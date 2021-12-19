@@ -24,11 +24,15 @@ set(LIB_SRC
 		src/address.cpp
 		src/socket.cpp
 		src/bytearray.cpp
+		src/stream.cpp
 		src/tcp_server.cpp
+		src/stream/socket_stream.cpp
 		src/http/http.cpp
 		src/http/http_request_parser.cpp
 		src/http/http_response_parser.cpp
 		src/http/http_parser.cpp
+		src/http/http_session.cpp
+		
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})
