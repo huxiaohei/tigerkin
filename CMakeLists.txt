@@ -87,5 +87,8 @@ target_link_libraries(test_http_parser ${LIBS})
 add_executable(test_tcp_server tests/tcp_server_test.cpp)
 target_link_libraries(test_tcp_server ${LIBS})
 
+add_executable(example_echo_server examples/echo_server.cpp)
+target_link_libraries(example_echo_server ${LIBS})
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)
