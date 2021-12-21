@@ -21,7 +21,7 @@ class SocketStream : public Stream {
 
     ssize_t read(void *buffer, size_t length) override;
     ssize_t read(ByteArray::ptr ba, size_t length) override;
-    ssize_t write(void *buffer, size_t length) override;
+    ssize_t write(const void *buffer, size_t length) override;
     ssize_t write(ByteArray::ptr ba, size_t length) override;
     void close() override;
 

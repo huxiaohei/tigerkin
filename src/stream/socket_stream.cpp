@@ -39,11 +39,11 @@ ssize_t SocketStream::read(ByteArray::ptr ba, size_t length) {
     return rt;
 }
 
-ssize_t SocketStream::write(void *buffer, size_t length) {
+ssize_t SocketStream::write(const void *buffer, size_t length) {
     if (!isConnected()) {
         return -1;
     }
-    return m_socket->recv(buffer, length);
+    return m_socket->send(buffer, length);
 }
 
 ssize_t SocketStream::write(ByteArray::ptr ba, size_t length) {

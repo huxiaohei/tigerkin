@@ -23,7 +23,7 @@ class Stream {
     virtual ssize_t readFixLength(void *buffer, size_t length);
     virtual ssize_t readFixLength(ByteArray::ptr ba, size_t length);
 
-    virtual ssize_t write(void *buffer, size_t length) = 0;
+    virtual ssize_t write(const void *buffer, size_t length) = 0;
     virtual ssize_t write(ByteArray::ptr ba, size_t length) = 0;
     virtual ssize_t writeFixLength(const void *buffer, size_t length);
     virtual ssize_t writeFixLength(ByteArray::ptr ba, size_t length);

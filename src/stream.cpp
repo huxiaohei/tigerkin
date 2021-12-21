@@ -39,7 +39,7 @@ ssize_t Stream::writeFixLength(const void *buffer, size_t length) {
     size_t left = length;
     size_t offset = 0;
     while (left > 0) {
-        ssize_t len = write((char *)buffer + offset, left);
+        ssize_t len = write((const char *)buffer + offset, left);
         if (len < 0) {
             return -1;
         }

@@ -19,7 +19,7 @@ class HttpSession : public SocketStream {
    public:
     typedef std::shared_ptr<HttpSession> ptr;
 
-    HttpSession(Socket::ptr socket, bool owner);
+    HttpSession(Socket::ptr socket, bool owner = true);
     HttpRequest::ptr recvRequest();
     ssize_t sendResponse(HttpResponse::ptr rsp);
 };
