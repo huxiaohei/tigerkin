@@ -13,6 +13,13 @@ void run() {
     while (!server->bind(addr)) {
         sleep(2);
     }
+    tigerkin::http::ServletDispatch::ptr dsp = server->getServletDispatch();
+    dsp->addServlet("/hello", [](tigerkin::http::HttpRequest::ptr req,
+                                 tigerkin::http::HttpResponse::ptr rsp,
+                                 tigerkin::http::HttpSession::ptr sess) {
+        rsp->setBody("Hello I'm tigerkin!");
+        return 0;
+    });
     server->start();
 }
 

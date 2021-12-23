@@ -19,6 +19,7 @@
 #include "bytearray.h"
 #include "thread.h"
 #include "util.h"
+#include "http/http_servlet.h"
 #include "http/http_server.h"
 
 #endif  // !__TIGERKIN_TIGERKIN_H__

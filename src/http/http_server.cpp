@@ -11,7 +11,7 @@ namespace tigerkin {
 namespace http {
 
 HttpServer::HttpServer(bool keepalive, IOManager *workerIOM, IOManager *acceptIOM)
-    : TcpServer(workerIOM, acceptIOM), m_keepalive(keepalive) {
+    : TcpServer(workerIOM, acceptIOM), m_keepalive(keepalive), m_dispatch(new ServletDispatch) {
 }
 
 void HttpServer::handleClient(Socket::ptr client) {
@@ -26,7 +26,7 @@ void HttpServer::handleClient(Socket::ptr client) {
             break;
         }
         HttpResponse::ptr rsp(new HttpResponse(req->getVersion(), req->isClose() || !m_keepalive));
-        rsp->setBody("Hello! I'm tigerkin.");
+        m_dispatch->handle(req, rsp, session);
         session->sendResponse(rsp);
     } while (m_keepalive);
     session->close();

@@ -32,7 +32,8 @@ set(LIB_SRC
 		src/http/http_response_parser.cpp
 		src/http/http_parser.cpp
 		src/http/http_session.cpp
-		src/http/http_server.cpp	
+		src/http/http_servlet.cpp
+		src/http/http_server.cpp
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})
