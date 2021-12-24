@@ -28,6 +28,9 @@ void HttpServer::handleClient(Socket::ptr client) {
         HttpResponse::ptr rsp(new HttpResponse(req->getVersion(), req->isClose() || !m_keepalive));
         m_dispatch->handle(req, rsp, session);
         session->sendResponse(rsp);
+        if (!m_keepalive || req->isClose()) {
+            break;
+        }
     } while (m_keepalive);
     session->close();
 }
