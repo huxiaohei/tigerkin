@@ -32,6 +32,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
 
     const std::string &getName() const { return m_name; }
     const uint8_t getSchedulerTickleCaller() const;
+    bool isAutoStop() const { return m_autoStop; }
     void start();
     void stop();
 

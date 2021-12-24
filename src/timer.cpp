@@ -164,7 +164,7 @@ void TimerManager::listExpiredCbs(std::vector<std::function<void()>> &cbs) {
 uint64_t TimerManager::getNextTime() {
     RWMutex::ReadLock lock(m_mutex);
     if (m_timers.empty()) {
-        return 0;
+        return ~0ull;
     }
     const Timer::ptr &next = *m_timers.begin();
     uint64_t nowMs = GetNowMillisecond();

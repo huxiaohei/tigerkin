@@ -261,7 +261,7 @@ void IOManager::idle() {
             static const int EPOLL_MAX_TIMEOUT = 5000;
             uint64_t nextTime = getNextTime();
             rt = epoll_wait(m_epfd, events, MAX_EPOLL_EVENT, nextTime > EPOLL_MAX_TIMEOUT ? EPOLL_MAX_TIMEOUT : (int)nextTime);
-            if (rt > 0 || getNextTime() <= 0) break;
+            if (rt > 0 || getNextTime() <= 0 || isAutoStop()) break;
         } while (!stopping());
 
         listExpiredCbs(cbs);
