@@ -133,6 +133,7 @@ static ssize_t doSocketIo(int fd, OriginFunc func, const char *hookFucName, tige
                     return -1;
                 }
                 state->canceled = false;
+                continue;
             } else {
                 if (timer) {
                     timer->cancel();
@@ -143,7 +144,7 @@ static ssize_t doSocketIo(int fd, OriginFunc func, const char *hookFucName, tige
                 return -1;
             }
         }
-    } while (n == -1 || errno == EINTR);
+    } while (n == -1 && (errno == EINTR || errno == EAGAIN));
     return n;
 }
 
