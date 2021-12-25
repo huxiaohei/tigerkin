@@ -156,21 +156,66 @@ void HttpRequest::initParam() {
     initCookies();
 }
 
+#define PARSE_PARAM(str, m, flag, trim)                                                       \
+    size_t pos = 0;                                                                           \
+    do {                                                                                      \
+        size_t last = pos;                                                                    \
+        pos = str.find('=', pos);                                                             \
+        if (pos == std::string::npos) {                                                       \
+            break;                                                                            \
+        }                                                                                     \
+        size_t key = pos;                                                                     \
+        pos = str.find(flag, pos);                                                            \
+        m.insert(std::make_pair(trim(str.substr(last, key - last)),                           \
+                                StringUtils::UrlEncode(str.substr(key + 1, pos - key - 1)))); \
+        if (pos == std::string::npos) {                                                       \
+            break;                                                                            \
+        }                                                                                     \
+        ++pos;                                                                                \
+    } while (true);
+
 void HttpRequest::initQueryParam() {
     if (m_parserParamFlag & 0x1) {
         return;
     }
+    PARSE_PARAM(m_query, m_params, '&', );
+    m_parserParamFlag |= 0x1;
 }
 
 void HttpRequest::initBodyParam() {
+    if (m_parserParamFlag & 0x2) {
+        return;
+    }
+    std::string contentType = getHeader("content-type");
+    if (strcasestr(contentType.c_str(), "application/x-www-form-urlencoded") == nullptr) {
+        m_parserParamFlag |= 0x2;
+        return;
+    }
+    PARSE_PARAM(m_body, m_params, '&', );
+    m_parserParamFlag |= 0x2;
 }
 
 void HttpRequest::initCookies() {
+    if (m_parserParamFlag & 0x4) {
+        return;
+    }
+    std::string cookie = getHeader("cookie");
+    if (cookie.empty()) {
+        m_parserParamFlag |= 0x4;
+        return;
+    }
+    PARSE_PARAM(cookie, m_cookies, ";", StringUtils::Trim);
+    m_parserParamFlag |= 0x4;
 }
 
 std::string HttpRequest::getHeader(const std::string &key, const std::string &def) const {
     auto it = m_headers.find(key);
     return it == m_headers.end() ? def : it->second;
+}
+
+bool HttpRequest::hasHeader(const std::string &key) const {
+    auto it = m_headers.find(key);
+    return it == m_headers.end() ? false : true;
 }
 
 void HttpRequest::delHeader(const std::string &key) {
@@ -181,9 +226,24 @@ void HttpRequest::setHeader(const std::string &key, const std::string &val) {
     m_headers[key] = val;
 }
 
+const std::map<std::string, std::string, CaseInsensitiveLess> &HttpRequest::getParams() {
+    initQueryParam();
+    initBodyParam();
+    return m_params;
+}
+
 std::string HttpRequest::getParam(const std::string &key, const std::string &def) {
+    initQueryParam();
+    initBodyParam();
     auto it = m_params.find(key);
     return it == m_params.end() ? def : it->second;
+}
+
+bool HttpRequest::hasParam(const std::string &key) {
+    initQueryParam();
+    initBodyParam();
+    auto it = m_params.find(key);
+    return it == m_params.end() ? false : true;
 }
 
 void HttpRequest::delParam(const std::string &key) {
@@ -194,9 +254,21 @@ void HttpRequest::setParam(const std::string &key, const std::string &val) {
     m_params[key] = val;
 }
 
+const std::map<std::string, std::string, CaseInsensitiveLess> &HttpRequest::getCookies() {
+    initCookies();
+    return m_cookies;
+}
+
 std::string HttpRequest::getCookie(const std::string &key, const std::string &def) {
+    initCookies();
     auto it = m_cookies.find(key);
     return it == m_cookies.end() ? def : it->second;
+}
+
+bool HttpRequest::hasCookie(const std::string &key) {
+    initCookies();
+    auto it = m_cookies.find(key);
+    return it == m_cookies.end() ? false : true;
 }
 
 void HttpRequest::delCookie(const std::string &key) {

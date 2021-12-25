@@ -258,9 +258,7 @@ class HttpRequest {
     const std::string &getFragment() const { return m_fragment; }
     const std::string &getBody() const { return m_body; }
     const std::map<std::string, std::string, CaseInsensitiveLess> &getHeaders() const { return m_headers; }
-    const std::map<std::string, std::string, CaseInsensitiveLess> &getParams() const { return m_params; }
-    const std::map<std::string, std::string, CaseInsensitiveLess> &getCookies() const { return m_cookies; }
-
+    
     void setMethod(HttpMethod v) { m_method = v; }
     void setVersion(uint8_t v) { m_version = v; }
     void setClose(bool v) { m_close = v; }
@@ -275,6 +273,7 @@ class HttpRequest {
     void setCookies(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_cookies = v; }
 
     std::string getHeader(const std::string &key, const std::string &def = "") const;
+    bool hasHeader(const std::string &key) const;
     void delHeader(const std::string &key);
     void setHeader(const std::string &key, const std::string &val);
     template <class T>
@@ -286,7 +285,9 @@ class HttpRequest {
         return getAs(m_headers, key, def);
     }
 
+    const std::map<std::string, std::string, CaseInsensitiveLess> &getParams();
     std::string getParam(const std::string &key, const std::string &def = "");
+    bool hasParam(const std::string &key);
     void delParam(const std::string &key);
     void setParam(const std::string &key, const std::string &val);
     template <class T>
@@ -297,8 +298,10 @@ class HttpRequest {
     T checkGetParamAs(const std::string &key, const T &def = T()) {
         return getAs(m_params, key, def);
     }
-
+    
+    const std::map<std::string, std::string, CaseInsensitiveLess> &getCookies();
     std::string getCookie(const std::string &key, const std::string &def = "");
+    bool hasCookie(const std::string &key);
     void delCookie(const std::string &key);
     void setCookie(const std::string &key, const std::string &val);
     template <class T>
