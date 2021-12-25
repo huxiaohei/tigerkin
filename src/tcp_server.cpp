@@ -95,7 +95,7 @@ void TcpServer::startAccept(Socket::ptr sock) {
         if (client) {
             client->setRecvTimeout(m_rdTimeout);
             m_workerIOM->schedule(std::bind(&TcpServer::handleClient, shared_from_this(), client));
-        } else {
+        } else if (!m_isStop) {
             TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "ACCEPT ERROR:"
                                                           << "\n\terrno:" << errno
                                                           << "\n\tstrerror:" << strerror(errno);
