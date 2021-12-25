@@ -40,6 +40,10 @@ Scheduler *Scheduler::GetThis() {
     return t_scheduler;
 }
 
+const pid_t Scheduler::getCallerThreadId() const {
+    return m_callerThreadId;
+}
+
 void Scheduler::start() {
     Mutex::Lock lock(m_mutex);
     if (!m_stopping) {

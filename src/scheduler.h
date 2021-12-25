@@ -65,6 +65,7 @@ class Scheduler : public std::enable_shared_from_this<Scheduler> {
 
    public:
     static Scheduler *GetThis();
+    const pid_t getCallerThreadId() const;
 
    private:
     struct Task {
