@@ -11,7 +11,6 @@
 #include <stddef.h>
 
 #include <iomanip>
-#include <sstream>
 
 #include "endian.h"
 #include "macro.h"
@@ -92,7 +91,7 @@ bool Address::Lookup(std::vector<Address::ptr> &result, const ::std::string &hos
         TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "GET ADDR INFO FAIL:"
                                                      << "\n\thost:" << host
                                                      << "\n\terror:" << error
-                                                     << "\n\terrstr" << gai_strerror(error);
+                                                     << "\n\terrstr:" << gai_strerror(error);
         return false;
     }
 

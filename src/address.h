@@ -18,6 +18,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -32,7 +33,7 @@ class Address {
     static Address::ptr Create(const sockaddr *addr, socklen_t addrlen);
     static bool Lookup(std::vector<Address::ptr> &result, const ::std::string &host, int family = AF_INET, int type = 0, int protocol = 0);
     static Address::ptr LookupAny(const std::string &host, int family = AF_INET, int type = 0, int protocol = 0);
-    
+
     int getFamily() const;
     virtual const sockaddr *getAddr() const = 0;
     virtual sockaddr *getAddr() = 0;
