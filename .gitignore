@@ -3,3 +3,4 @@
 /lib
 /obj
 /.vscode
+src/uri.cpp
