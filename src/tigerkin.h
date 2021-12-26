@@ -18,6 +18,7 @@
 #include "tcp_server.h"
 #include "bytearray.h"
 #include "thread.h"
+#include "uri.h"
 #include "util.h"
 #include "http/http_servlet.h"
 #include "http/http_server.h"
