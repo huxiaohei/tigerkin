@@ -99,6 +99,12 @@ class Socket : std::enable_shared_from_this<Socket> {
     Address::ptr m_remoteAddress;
 };
 
+class SSLSocket : public Socket {
+    // todo
+   public:
+    typedef std::shared_ptr<SSLSocket> ptr;
+};
+
 }  // namespace tigerkin
 
 #endif  // !__TIGERKIN_SOCKET_H__
