@@ -20,8 +20,8 @@ class Socket : std::enable_shared_from_this<Socket> {
     typedef std::shared_ptr<Socket> ptr;
     typedef std::weak_ptr<Socket> weakPtr;
 
-    static Socket::ptr CreateTCPSocket(Address::ptr &addr);
-    static Socket::ptr CreateUDPSocket(Address::ptr &addr);
+    static Socket::ptr CreateTCPSocket(Address::ptr addr);
+    static Socket::ptr CreateUDPSocket(Address::ptr addr);
     static Socket::ptr CreateTCPSocket();
     static Socket::ptr CreateUDPSocket();
     static Socket::ptr CreateTCPSocket6();

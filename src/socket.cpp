@@ -15,12 +15,12 @@
 
 namespace tigerkin {
 
-Socket::ptr Socket::CreateTCPSocket(Address::ptr &addr) {
+Socket::ptr Socket::CreateTCPSocket(Address::ptr addr) {
     Socket::ptr sock(new Socket(addr->getFamily(), SOCK_STREAM, 0));
     return sock;
 }
 
-Socket::ptr Socket::CreateUDPSocket(Address::ptr &addr) {
+Socket::ptr Socket::CreateUDPSocket(Address::ptr addr) {
     Socket::ptr sock(new Socket(addr->getFamily(), SOCK_DGRAM, 0));
     return sock;
 }
