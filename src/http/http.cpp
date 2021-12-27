@@ -118,7 +118,7 @@ std::ostream &HttpResponse::dump(std::ostream &os) const {
         if (!m_websocket && strcasecmp(it.first.c_str(), "connection") == 0) {
             continue;
         }
-        os << it.first << ":" << it.second << "\r\n";
+        os << it.first << ": " << it.second << "\r\n";
     }
     for (auto &it : m_cookies) {
         os << "Set-Cookie: " << it << "\r\n";
@@ -281,8 +281,7 @@ void HttpRequest::setCookie(const std::string &key, const std::string &val) {
 
 std::ostream &HttpRequest::dump(std::ostream &os) const {
     os << HttpMethodToString(m_method) << " "
-       << m_path
-       << (m_query.empty() ? "" : "?") << m_query
+       << m_path << (m_query.empty() ? "" : "?") << m_query
        << (m_fragment.empty() ? "" : "#") << m_fragment
        << " HTTP/" << ((uint32_t)(m_version >> 4)) << "." << ((uint32_t)(m_version & 0x0F)) << "\r\n";
     if (!m_websocket) {
@@ -292,11 +291,10 @@ std::ostream &HttpRequest::dump(std::ostream &os) const {
         if (!m_websocket && strcasecmp(it.first.c_str(), "connection") == 0) {
             continue;
         }
-        os << it.first << ":" << it.second << "\r\n";
+        os << it.first << ": " << it.second << "\r\n";
     }
     if (m_cookies.size() > 0) {
-        os << "Set-Cookie:"
-           << "\n";
+        os << "Set-Cookie: \n";
         for (auto &it : m_cookies) {
             os << "\t" << it.first << ":" << it.second << "\n";
         }

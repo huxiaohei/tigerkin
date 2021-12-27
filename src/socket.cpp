@@ -449,16 +449,16 @@ bool Socket::cancelAll() {
 }
 
 std::ostream &Socket::dump(std::ostream &os) const {
-    os << "\n\tsocket:" << m_socket
-       << "\n\tfamily:" << m_family
-       << "\n\ttype:" << m_type
-       << "\n\tprotocol:" << m_protocol
-       << "\n\tisConnected:" << m_isConnected;
+    os << "socket:" << m_socket
+       << "\nfamily:" << m_family
+       << "\ntype:" << m_type
+       << "\nprotocol:" << m_protocol
+       << "\nisConnected:" << m_isConnected;
     if (m_localAddress) {
-        os << "\n\tlocalAddress:" << m_localAddress->toString();
+        os << "\nlocalAddress:" << m_localAddress->toString();
     }
     if (m_remoteAddress) {
-        os << "\n\tremoteAddress:" << m_remoteAddress->toString();
+        os << "\nremoteAddress:" << m_remoteAddress->toString();
     }
     return os;
 }
