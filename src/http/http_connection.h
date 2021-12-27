@@ -129,39 +129,39 @@ class HttpConnectionPool {
 
     HttpConnection::ptr getConnection();
 
-    HttpResponse::ptr get(const std::string &url,
+    HttpResult::ptr get(const std::string &url,
                           uint64_t timeout,
                           const std::map<std::string, std::string> &headers = {},
                           const std::string &body = "");
 
-    HttpResponse::ptr get(Uri::ptr uri,
+    HttpResult::ptr get(Uri::ptr uri,
                           uint64_t timeout,
                           const std::map<std::string, std::string> &headers = {},
                           const std::string &body = "");
 
-    HttpResponse::ptr post(const std::string &url,
+    HttpResult::ptr post(const std::string &url,
                            uint64_t timeout,
                            const std::map<std::string, std::string> &headers = {},
                            const std::string &body = "");
 
-    HttpResponse::ptr post(Uri::ptr uri,
+    HttpResult::ptr post(Uri::ptr uri,
                            uint64_t timeout,
                            const std::map<std::string, std::string> &headers = {},
                            const std::string &body = "");
 
-    HttpResponse::ptr request(HttpMethod method,
+    HttpResult::ptr request(HttpMethod method,
                               const std::string &url,
                               uint64_t timeout,
                               const std::map<std::string, std::string> &headers = {},
                               const std::string &body = "");
 
-    HttpResponse::ptr request(HttpMethod method,
+    HttpResult::ptr request(HttpMethod method,
                               Uri::ptr uri,
                               uint64_t timeout,
                               const std::map<std::string, std::string> &headers = {},
                               const std::string &body = "");
 
-    HttpResponse::ptr request(HttpRequest::ptr req, uint64_t timeout);
+    HttpResult::ptr request(HttpRequest::ptr req, uint64_t timeout);
 
    private:
     static void ReleasePtr(HttpConnection *ptr, HttpConnectionPool *pool);

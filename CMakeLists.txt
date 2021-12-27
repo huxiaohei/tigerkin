@@ -35,6 +35,7 @@ set(LIB_SRC
 		src/http/http_session.cpp
 		src/http/http_servlet.cpp
 		src/http/http_server.cpp
+		src/http/http_connection.cpp
 	)
 
 add_library(TIGERKIN SHARED ${LIB_SRC})
