@@ -19,6 +19,8 @@ class SocketStream : public Stream {
     SocketStream(Socket::ptr sock, bool owner);
     ~SocketStream();
 
+    Socket::ptr getSocket() const { return m_socket; }
+
     ssize_t read(void *buffer, size_t length) override;
     ssize_t read(ByteArray::ptr ba, size_t length) override;
     ssize_t write(const void *buffer, size_t length) override;
