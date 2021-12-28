@@ -9,18 +9,19 @@
 #define __TIGERKIN_TIGERKIN_H__
 
 #include "address.h"
+#include "bytearray.h"
 #include "config.h"
+#include "http/http_connection.h"
+#include "http/http_server.h"
+#include "http/http_servlet.h"
 #include "iomanager.h"
 #include "macro.h"
 #include "mutex.h"
 #include "scheduler.h"
 #include "singleton.h"
 #include "tcp_server.h"
-#include "bytearray.h"
 #include "thread.h"
 #include "uri.h"
 #include "util.h"
-#include "http/http_servlet.h"
-#include "http/http_server.h"
 
 #endif  // !__TIGERKIN_TIGERKIN_H__
