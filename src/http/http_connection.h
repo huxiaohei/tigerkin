@@ -129,37 +129,37 @@ class HttpConnectionPool {
 
     HttpConnection::ptr getConnection();
 
-    HttpResult::ptr get(const std::string &url,
-                          uint64_t timeout,
-                          const std::map<std::string, std::string> &headers = {},
-                          const std::string &body = "");
+    HttpResult::ptr get(const std::string &path,
+                        uint64_t timeout,
+                        const std::map<std::string, std::string> &headers = {},
+                        const std::string &body = "");
 
     HttpResult::ptr get(Uri::ptr uri,
-                          uint64_t timeout,
-                          const std::map<std::string, std::string> &headers = {},
-                          const std::string &body = "");
+                        uint64_t timeout,
+                        const std::map<std::string, std::string> &headers = {},
+                        const std::string &body = "");
 
-    HttpResult::ptr post(const std::string &url,
-                           uint64_t timeout,
-                           const std::map<std::string, std::string> &headers = {},
-                           const std::string &body = "");
+    HttpResult::ptr post(const std::string &path,
+                         uint64_t timeout,
+                         const std::map<std::string, std::string> &headers = {},
+                         const std::string &body = "");
 
     HttpResult::ptr post(Uri::ptr uri,
-                           uint64_t timeout,
-                           const std::map<std::string, std::string> &headers = {},
-                           const std::string &body = "");
+                         uint64_t timeout,
+                         const std::map<std::string, std::string> &headers = {},
+                         const std::string &body = "");
 
     HttpResult::ptr request(HttpMethod method,
-                              const std::string &url,
-                              uint64_t timeout,
-                              const std::map<std::string, std::string> &headers = {},
-                              const std::string &body = "");
+                            const std::string &path,
+                            uint64_t timeout,
+                            const std::map<std::string, std::string> &headers = {},
+                            const std::string &body = "");
 
     HttpResult::ptr request(HttpMethod method,
-                              Uri::ptr uri,
-                              uint64_t timeout,
-                              const std::map<std::string, std::string> &headers = {},
-                              const std::string &body = "");
+                            Uri::ptr uri,
+                            uint64_t timeout,
+                            const std::map<std::string, std::string> &headers = {},
+                            const std::string &body = "");
 
     HttpResult::ptr request(HttpRequest::ptr req, uint64_t timeout);
 
