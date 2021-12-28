@@ -7,7 +7,6 @@
 * gcc-c++ version 8.4.1
 * cmake version 3.18.2
 * boost version 1.66.0
-* boost-devel version 1.66.0
 * yaml-cpp version 0.6.2
 * ragel version 7.0.0.9
 
