@@ -449,7 +449,7 @@ bool Socket::cancelAll() {
 }
 
 std::ostream &Socket::dump(std::ostream &os) const {
-    os << "socket:" << m_socket
+    os << "\nsocket:" << m_socket
        << "\nfamily:" << m_family
        << "\ntype:" << m_type
        << "\nprotocol:" << m_protocol
