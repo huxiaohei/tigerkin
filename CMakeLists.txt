@@ -100,6 +100,9 @@ target_link_libraries(test_http_server ${LIBS})
 add_executable(test_uri tests/uri_test.cpp)
 target_link_libraries(test_uri ${LIBS})
 
+add_executable(test_http_connection tests/http_connection_test.cpp)
+target_link_libraries(test_http_connection ${LIBS})
+
 add_executable(example_echo_server examples/echo_server.cpp)
 target_link_libraries(example_echo_server ${LIBS})
 
