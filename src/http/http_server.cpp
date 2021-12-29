@@ -19,10 +19,16 @@ void HttpServer::handleClient(Socket::ptr client) {
     do {
         HttpRequest::ptr req = session->recvRequest();
         if (!req) {
-            TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "RECV REQUEST FAIL:"
-                << "\n\terrno:" << errno
-                << "\n\terrstr:" << strerror(errno)
-                << "\n\tclient:" << client->toString();
+            if (errno == ETIMEDOUT) {
+                TIGERKIN_LOG_INFO(TIGERKIN_LOG_NAME(SYSTEM)) << "Connection timed out localAddress:"
+                                                             << client->getLocalAddress()->toString()
+                                                             << "remoteAddress:" << client->getRemoteAddress()->toString();
+
+            } else {
+                TIGERKIN_LOG_WARN(TIGERKIN_LOG_NAME(SYSTEM)) << "RECV REQUEST FAIL localAddress:" << client->getLocalAddress()->toString()
+                                                             << " remoteAddress:" << client->getRemoteAddress()->toString()
+                                                             << " errstr:" << strerror(errno);
+            }
             break;
         }
         HttpResponse::ptr rsp(new HttpResponse(req->getVersion(), req->isClose() || !m_keepalive));
