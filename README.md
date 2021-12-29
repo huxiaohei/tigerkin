@@ -30,7 +30,7 @@
   |:---:|:---:|:---:|:---:|:---:|:---:|
   | m | 消息 | p | 日志级别 | r | 累计毫秒数 |
   | c | 日志名称 | t | 线程id | n | 换行 |
-  | d | 时间 | f | 文件名 | f | 行号 |
+  | d | 时间 | f | 文件名 | l | 行号 |
   | T | Tab | F | 协程id | N | 线程名称 |
 
 
@@ -80,3 +80,53 @@
 * 支持毫秒级定时器
 * 支持条件定时器
 
+## Hook
+
+`hook`系统底层先关API功能。`hook`是控制是线程粒度的，可以自由选择是否开启。通过`hook`可以让一些不具备一步功能的`API`，展现出异步的功能
+
+* 支持`socket io`相关`API`
+* 支持`sleep`系列函数
+
+## Socket
+
+分装地址类提供统一的地址(`IPv4`、`IPv6`、`Unix`)操作(域名、`IP`解析等)相关接口。封装`Socket`类提供所有`Socket API`功能
+
+## ByteArray序列化模块
+
+`ByteArray`二进制序列化模块，提供对二进制的常用操作
+
+* 支持读写基础数据类型`int8_t`、`int16_t`、`int32_t`、`int64_t`、`varint`、`std::string`等
+* 支持字节序转换
+* 支持序列化到文件和从文件反序列化
+
+## TcpServer
+
+基于`Socket`类，封装了一个通用的`TcpServer`的服务器类，提供简单的`API`，使用便捷，可以快速绑定一个或多个地址，启动服务，监听端口，`accept`连接，处理`socket`连接等功能。具体业务功能服务器实现，只需要继承该类就可以快速实现
+
+## Stream
+
+封装流式的统一接口。将文件、`socket`封装成统一的接口。使用的时候，采用统一的风格操作。基于统一的风格，可以提供更灵活的扩展。
+
+* 支持`SocketStream`
+
+## HTTP
+
+采用`Ragel`(有限状态机，性能媲美汇编)，实现`HTTP/1.1`的简单协议实现和`uri`的解析。基于`SocketStream`实现`HTTP`客户端和服务端
+
+* 支持`HTTP`客户端(`HttpConnection`)
+* 支持`HTTP`服务端(`HttpSession`)
+* 支持`HTTP`连接池(`HttpConnectionPool`)
+
+## Servlet
+
+实现了`ServletDispatch`、`FunctionServlet`、`NotFoundServlet`等，配合`HTTP`模块，提供`HTTP`服务器
+
+* 支持`uri`的精准和模糊匹配
+
+## 其它
+
+欢迎`star`、`watching`、`fork`、`issue`
+
+* 联系方式
+  * QQ: 517829514
+  * EMail: huxiaoheigame@gmail.com
