@@ -60,19 +60,19 @@ class ServletDispatch : public Servlet {
 
     int32_t handle(HttpRequest::ptr request, HttpResponse::ptr response, HttpSession::ptr session) override;
 
-    void addServlet(const std::string &uri, Servlet::ptr slt);
-    void addServlet(const std::string &uri, FunctionServlet::Callback cb);
-    void addGlobServlet(const std::string &uri, Servlet::ptr slt);
-    void addGlobServlet(const std::string &uri, FunctionServlet::Callback cb);
+    void addServlet(const std::string &path, Servlet::ptr slt);
+    void addServlet(const std::string &path, FunctionServlet::Callback cb);
+    void addGlobServlet(const std::string &path, Servlet::ptr slt);
+    void addGlobServlet(const std::string &path, FunctionServlet::Callback cb);
 
-    void delServlet(const std::string &uri);
-    void delGlobServlet(const std::string &uri);
+    void delServlet(const std::string &path);
+    void delGlobServlet(const std::string &path);
 
     void setDefaultServlet(Servlet::ptr defaultServlet);
     Servlet::ptr getDefaultServlet();
-    Servlet::ptr getServlet(const std::string &uri);
-    Servlet::ptr getGlobServlet(const std::string &uri);
-    Servlet::ptr getMatchedServlet(const std::string &uri);
+    Servlet::ptr getServlet(const std::string &path);
+    Servlet::ptr getGlobServlet(const std::string &path);
+    Servlet::ptr getMatchedServlet(const std::string &path);
 
    private:
     ReadWriteLock m_rdLock;

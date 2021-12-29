@@ -6,6 +6,7 @@
  ****************************************************************/
 
 #include "http_servlet.h"
+
 #include <fnmatch.h>
 
 namespace tigerkin {
@@ -62,41 +63,41 @@ int32_t ServletDispatch::handle(HttpRequest::ptr request, HttpResponse::ptr resp
     return 0;
 }
 
-void ServletDispatch::addServlet(const std::string &uri, Servlet::ptr slt) {
+void ServletDispatch::addServlet(const std::string &path, Servlet::ptr slt) {
     ReadWriteLock::WriteLock lock(m_rdLock);
-    m_datas[uri] = slt;
+    m_datas[path] = slt;
 }
 
-void ServletDispatch::addServlet(const std::string &uri, FunctionServlet::Callback cb) {
+void ServletDispatch::addServlet(const std::string &path, FunctionServlet::Callback cb) {
     ReadWriteLock::WriteLock lock(m_rdLock);
-    m_datas[uri].reset(new FunctionServlet(cb));
+    m_datas[path].reset(new FunctionServlet(cb));
 }
 
-void ServletDispatch::addGlobServlet(const std::string &uri, Servlet::ptr slt) {
+void ServletDispatch::addGlobServlet(const std::string &path, Servlet::ptr slt) {
     ReadWriteLock::WriteLock lock(m_rdLock);
     std::vector<std::pair<std::string, Servlet::ptr>>::iterator it = m_globs.begin();
     while (it != m_globs.end()) {
-        if (it->first == uri) {
+        if (it->first == path) {
             m_globs.erase(it);
         }
     }
-    m_globs.push_back(std::make_pair(uri, slt));
+    m_globs.push_back(std::make_pair(path, slt));
 }
 
-void ServletDispatch::addGlobServlet(const std::string &uri, FunctionServlet::Callback cb) {
-    addGlobServlet(uri, FunctionServlet::ptr(new FunctionServlet(cb)));
+void ServletDispatch::addGlobServlet(const std::string &path, FunctionServlet::Callback cb) {
+    addGlobServlet(path, FunctionServlet::ptr(new FunctionServlet(cb)));
 }
 
-void ServletDispatch::delServlet(const std::string &uri) {
+void ServletDispatch::delServlet(const std::string &path) {
     ReadWriteLock::WriteLock lock(m_rdLock);
-    m_datas.erase(uri);
+    m_datas.erase(path);
 }
 
-void ServletDispatch::delGlobServlet(const std::string &uri) {
+void ServletDispatch::delGlobServlet(const std::string &path) {
     ReadWriteLock::WriteLock lock(m_rdLock);
     std::vector<std::pair<std::string, Servlet::ptr>>::iterator it = m_globs.begin();
     while (it != m_globs.end()) {
-        if (it->first == uri) {
+        if (it->first == path) {
             m_globs.erase(it);
             break;
         }
@@ -111,32 +112,32 @@ Servlet::ptr ServletDispatch::getDefaultServlet() {
     return m_defaultServlet;
 }
 
-Servlet::ptr ServletDispatch::getServlet(const std::string &uri) {
+Servlet::ptr ServletDispatch::getServlet(const std::string &path) {
     ReadWriteLock::ReadLock lock(m_rdLock);
-    std::unordered_map<std::string, Servlet::ptr>::iterator it = m_datas.find(uri);
+    std::unordered_map<std::string, Servlet::ptr>::iterator it = m_datas.find(path);
     return it == m_datas.end() ? nullptr : it->second;
 }
 
-Servlet::ptr ServletDispatch::getGlobServlet(const std::string &uri) {
+Servlet::ptr ServletDispatch::getGlobServlet(const std::string &path) {
     ReadWriteLock::ReadLock lock(m_rdLock);
     std::vector<std::pair<std::string, Servlet::ptr>>::iterator it = m_globs.begin();
     while (it != m_globs.end()) {
-        if (it->first == uri) {
+        if (it->first == path) {
             return it->second;
         }
     }
     return nullptr;
 }
 
-Servlet::ptr ServletDispatch::getMatchedServlet(const std::string &uri) {
+Servlet::ptr ServletDispatch::getMatchedServlet(const std::string &path) {
     ReadWriteLock::ReadLock lock(m_rdLock);
-    std::unordered_map<std::string, Servlet::ptr>::iterator mIt = m_datas.find(uri);
+    std::unordered_map<std::string, Servlet::ptr>::iterator mIt = m_datas.find(path);
     if (mIt != m_datas.end()) {
         return mIt->second;
     }
     std::vector<std::pair<std::string, Servlet::ptr>>::iterator gIt = m_globs.begin();
     while (gIt != m_globs.end()) {
-        if (!fnmatch(gIt->first.c_str(), uri.c_str(), 0)) {
+        if (!fnmatch(gIt->first.c_str(), path.c_str(), 0)) {
             return gIt->second;
         }
     }
