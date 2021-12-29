@@ -209,7 +209,7 @@ class HttpResponse {
     void setWebsocket(bool v) { m_websocket = v; }
     void setBody(const std::string &v) { m_body = v; }
     void setReason(const std::string &v) { m_reason = v; }
-    void setHeaders(std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_headers = v; }
+    void setHeaders(const std::map<std::string, std::string, CaseInsensitiveLess> &v) { m_headers = v; }
     void setRedirect(const std::string &uri);
 
     void delHeader(const std::string &key);
