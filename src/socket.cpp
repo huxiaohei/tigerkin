@@ -55,7 +55,7 @@ Socket::ptr CreateUnixUDPSocket() {
 }
 
 Socket::Socket(int family, int type, int protocol)
-    : m_socket(-1), m_family(family), m_type(type), m_protocol(protocol), m_isConnected(false) {
+    : m_socket(-1), m_family(family), m_type(type), m_protocol(protocol), m_isConnected(false), m_hasClosed(false) {
 }
 
 Socket::~Socket() {
@@ -176,12 +176,14 @@ Socket::ptr Socket::accept() {
     Socket::ptr sock(new Socket(m_family, m_type, m_protocol));
     int newSocket = ::accept(m_socket, nullptr, nullptr);
     if (newSocket == -1) {
-        TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "ACCEPT ERROR:\n\t"
-                                                      << "family:" << m_family << "\n\t"
-                                                      << "type:" << m_type << "\n\t"
-                                                      << "protocol:" << m_protocol << "\n\t"
-                                                      << "errno:" << errno << "\n\t"
-                                                      << "strerror:" << strerror(errno);
+        if (!m_hasClosed) {
+            TIGERKIN_LOG_ERROR(TIGERKIN_LOG_NAME(SYSTEM)) << "ACCEPT ERROR  "
+                                                          << " family:" << m_family
+                                                          << " type:" << m_type
+                                                          << " protocol:" << m_protocol
+                                                          << " errno:" << errno
+                                                          << " strerror:" << strerror(errno);
+        }
         return nullptr;
     }
     if (sock->init(newSocket)) {
@@ -335,6 +337,7 @@ bool Socket::close() {
         return true;
     }
     m_isConnected = false;
+    m_hasClosed = true;
     if (m_socket != -1) {
         ::close(m_socket);
         m_socket = -1;

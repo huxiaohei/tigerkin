@@ -60,8 +60,9 @@ class Socket : std::enable_shared_from_this<Socket> {
 
     virtual std::ostream &dump(std::ostream &os) const;
     virtual std::string toString() const;
-    bool isConnected() const { return m_isConnected; };
-    bool isValid() const { return m_socket != -1; };
+    bool isConnected() const { return m_isConnected; }
+    bool hasClosed() const { return m_hasClosed; }
+    bool isValid() const { return m_socket != -1; }
 
     virtual bool bind(const Address::ptr addr);
     virtual bool listen(int backlog = SOMAXCONN);
@@ -94,7 +95,8 @@ class Socket : std::enable_shared_from_this<Socket> {
     int m_family;
     int m_type;
     int m_protocol;
-    int m_isConnected;
+    bool m_isConnected;
+    bool m_hasClosed;
     Address::ptr m_localAddress;
     Address::ptr m_remoteAddress;
 };
