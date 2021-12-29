@@ -1,7 +1,7 @@
 logs:
   - name: SYSTEM
     level: DEBUG
-    formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
+    formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m %n"
     appenders:
       - type: StdOutLogAppender
         level: DEBUG
@@ -10,7 +10,7 @@ logs:
         file: ./system.log
   - name: EXAMPLE
     level: DEBUG
-    formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m%n"
+    formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m %n"
     appenders:
       - type: StdOutLogAppender
         level: DEBUG

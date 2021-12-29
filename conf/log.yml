@@ -42,3 +42,12 @@ logs:
       - type: FileLogAppender
         level: INFO
         file: ./mutex_safe_test_log.txt
+  - name: EXAMPLE
+    level: DEBUG
+    formatter: "%d{%Y-%m-%d %H:%M:%S} %t %N %F [%p] [%c] %f:%l %m %n"
+    appenders:
+      - type: StdOutLogAppender
+        level: DEBUG
+      - type: FileLogAppender
+        level: DEBUG
+        file: ./debug.log

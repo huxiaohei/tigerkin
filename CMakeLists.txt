@@ -102,5 +102,8 @@ target_link_libraries(test_uri ${LIBS})
 add_executable(test_http_connection tests/http_connection_test.cpp)
 target_link_libraries(test_http_connection ${LIBS})
 
+add_executable(example_http examples/example_http_server.cpp)
+target_link_libraries(example_http ${LIBS})
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATKIN{PROJECT_SOURCE_DIR}/lib)
